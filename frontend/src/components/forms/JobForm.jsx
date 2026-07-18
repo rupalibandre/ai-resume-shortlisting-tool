@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-function JobForm({ onSave, onClose }) {
+function JobForm({ onSave, onClose, initialData }) {
   const [formData, setFormData] = useState({
     title: "",
     experience: "",
@@ -8,36 +8,41 @@ function JobForm({ onSave, onClose }) {
     status: "Active",
   });
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
+
+  function handleChange(e) {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
-  };
+  }
 
-  const handleSubmit = (e) => {
+  function handleSubmit(e) {
     e.preventDefault();
 
-    const newJob = {
-      id: Date.now(),
-      ...formData,
-    };
-
-    onSave(newJob);
-
-    setFormData({
-      title: "",
-      experience: "",
-      location: "",
-      status: "Active",
-    });
+    if (initialData) {
+      onSave(formData);
+    } else {
+      onSave({
+        id: Date.now(),
+        ...formData,
+      });
+    }
 
     onClose();
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4"
+    >
       <input
+        type="text"
         name="title"
         placeholder="Job Title"
         value={formData.title}
@@ -47,6 +52,7 @@ function JobForm({ onSave, onClose }) {
       />
 
       <input
+        type="text"
         name="experience"
         placeholder="Experience"
         value={formData.experience}
@@ -56,6 +62,7 @@ function JobForm({ onSave, onClose }) {
       />
 
       <input
+        type="text"
         name="location"
         placeholder="Location"
         value={formData.location}
@@ -87,7 +94,7 @@ function JobForm({ onSave, onClose }) {
           type="submit"
           className="px-5 py-2 rounded-xl bg-blue-600"
         >
-          Save Job
+          {initialData ? "Update Job" : "Save Job"}
         </button>
       </div>
     </form>

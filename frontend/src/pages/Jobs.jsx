@@ -1,16 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import JobTable from "../components/jobs/JobTable";
 import AddJobModal from "../components/jobs/AddJobModal";
+import EditJobModal from "../components/jobs/EditJobModal";
 import { initialJobs } from "../data/jobsData";
 
 function Jobs() {
-  const [jobs, setJobs] = useState(initialJobs);
+  const [jobs, setJobs] = useState(() => {
+    const savedJobs = localStorage.getItem("jobs");
+    return savedJobs ? JSON.parse(savedJobs) : initialJobs;
+  });
+
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
-  const [openModal, setOpenModal] = useState(false);
 
-  function addJob(newJob) {
-    setJobs((prev) => [newJob, ...prev]);
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem("jobs", JSON.stringify(jobs));
+  }, [jobs]);
+
+  function addJob(job) {
+    setJobs((prev) => [job, ...prev]);
+  }
+
+  function deleteJob(id) {
+    setJobs((prev) => prev.filter((job) => job.id !== id));
+  }
+
+  function editJob(job) {
+    setSelectedJob(job);
+    setOpenEditModal(true);
+  }
+
+  function updateJob(updatedJob) {
+    setJobs((prev) =>
+      prev.map((job) =>
+        job.id === updatedJob.id ? updatedJob : job
+      )
+    );
+
+    setOpenEditModal(false);
+    setSelectedJob(null);
   }
 
   return (
@@ -21,7 +53,7 @@ function Jobs() {
         </h1>
 
         <button
-          onClick={() => setOpenModal(true)}
+          onClick={() => setOpenAddModal(true)}
           className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl"
         >
           + Add Job
@@ -52,12 +84,21 @@ function Jobs() {
         jobs={jobs}
         search={search}
         status={status}
+        onDelete={deleteJob}
+        onEdit={editJob}
       />
 
       <AddJobModal
-        isOpen={openModal}
-        onClose={() => setOpenModal(false)}
+        isOpen={openAddModal}
+        onClose={() => setOpenAddModal(false)}
         onSave={addJob}
+      />
+
+      <EditJobModal
+        isOpen={openEditModal}
+        onClose={() => setOpenEditModal(false)}
+        selectedJob={selectedJob}
+        onUpdate={updateJob}
       />
     </div>
   );

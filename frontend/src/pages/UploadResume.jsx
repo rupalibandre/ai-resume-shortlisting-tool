@@ -1,5 +1,7 @@
+import ResumeUpload from "../components/resume/ResumeUpload";
+
 function UploadResume() {
-  return <h1>Upload Resume</h1>;
+  return <ResumeUpload />;
 }
 
 export default UploadResume;

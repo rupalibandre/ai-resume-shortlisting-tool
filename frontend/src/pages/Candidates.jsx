@@ -1,5 +1,9 @@
+import ResumeUpload from "../components/resume/ResumeUpload";
+
 function Candidates() {
-  return <h1>Candidates</h1>;
+  return (
+    <ResumeUpload />
+  );
 }
 
 export default Candidates;
