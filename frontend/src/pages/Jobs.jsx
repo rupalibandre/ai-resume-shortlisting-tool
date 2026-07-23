@@ -1,32 +1,65 @@
 import { useEffect, useState } from "react";
+
 import JobTable from "../components/jobs/JobTable";
 import AddJobModal from "../components/jobs/AddJobModal";
 import EditJobModal from "../components/jobs/EditJobModal";
-import { initialJobs } from "../data/jobsData";
+
+import {
+  getJobs,
+  createJob,
+  updateJob,
+  deleteJob,
+} from "../services/jobService";
 
 function Jobs() {
-  const [jobs, setJobs] = useState(() => {
-    const savedJobs = localStorage.getItem("jobs");
-    return savedJobs ? JSON.parse(savedJobs) : initialJobs;
-  });
+  const [jobs, setJobs] = useState([]);
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("All");
 
-  const [openAddModal, setOpenAddModal] = useState(false);
-  const [openEditModal, setOpenEditModal] = useState(false);
-  const [selectedJob, setSelectedJob] = useState(null);
+  const [openAddModal, setOpenAddModal] =
+    useState(false);
+
+  const [openEditModal, setOpenEditModal] =
+    useState(false);
+
+  const [selectedJob, setSelectedJob] =
+    useState(null);
 
   useEffect(() => {
-    localStorage.setItem("jobs", JSON.stringify(jobs));
-  }, [jobs]);
+    loadJobs();
+  }, []);
 
-  function addJob(job) {
-    setJobs((prev) => [job, ...prev]);
+  async function loadJobs() {
+    try {
+      const data = await getJobs();
+      setJobs(data.jobs || []);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  function deleteJob(id) {
-    setJobs((prev) => prev.filter((job) => job.id !== id));
+  async function addJob(jobData) {
+    try {
+      await createJob(jobData);
+
+      await loadJobs();
+
+      setOpenAddModal(false);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function deleteJobHandler(id) {
+    if (!window.confirm("Delete this job?")) return;
+
+    try {
+      await deleteJob(id);
+
+      await loadJobs();
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   function editJob(job) {
@@ -34,19 +67,25 @@ function Jobs() {
     setOpenEditModal(true);
   }
 
-  function updateJob(updatedJob) {
-    setJobs((prev) =>
-      prev.map((job) =>
-        job.id === updatedJob.id ? updatedJob : job
-      )
-    );
+  async function updateJobHandler(updatedJob) {
+    try {
+      await updateJob(
+        selectedJob.id,
+        updatedJob
+      );
 
-    setOpenEditModal(false);
-    setSelectedJob(null);
+      await loadJobs();
+
+      setOpenEditModal(false);
+
+      setSelectedJob(null);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  return (
-    <div>
+  return (  
+      <div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">
           Jobs Management
@@ -60,31 +99,20 @@ function Jobs() {
         </button>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      <div className="mb-6">
         <input
           type="text"
           placeholder="Search Jobs..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-white/10 border border-white/10 rounded-xl px-4 py-3 outline-none"
+          className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 outline-none"
         />
-
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="bg-white/10 border border-white/10 rounded-xl px-4 py-3"
-        >
-          <option>All</option>
-          <option>Active</option>
-          <option>Closed</option>
-        </select>
       </div>
 
       <JobTable
         jobs={jobs}
         search={search}
-        status={status}
-        onDelete={deleteJob}
+        onDelete={deleteJobHandler}
         onEdit={editJob}
       />
 
@@ -96,9 +124,12 @@ function Jobs() {
 
       <EditJobModal
         isOpen={openEditModal}
-        onClose={() => setOpenEditModal(false)}
+        onClose={() => {
+          setOpenEditModal(false);
+          setSelectedJob(null);
+        }}
         selectedJob={selectedJob}
-        onUpdate={updateJob}
+        onUpdate={updateJobHandler}
       />
     </div>
   );

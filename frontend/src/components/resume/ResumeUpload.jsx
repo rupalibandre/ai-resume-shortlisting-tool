@@ -1,7 +1,11 @@
+import { useState } from "react";
+
 import UploadZone from "./UploadZone";
 import ResumeList from "./ResumeList";
 
 function ResumeUpload() {
+  const [result, setResult] = useState(null);
+
   return (
     <div className="space-y-8">
 
@@ -15,9 +19,13 @@ function ResumeUpload() {
         </p>
       </div>
 
-      <UploadZone />
+      <UploadZone
+        setResult={setResult}
+      />
 
-      <ResumeList />
+      <ResumeList
+        result={result}
+      />
 
     </div>
   );

@@ -3,14 +3,23 @@ import { useEffect, useState } from "react";
 function JobForm({ onSave, onClose, initialData }) {
   const [formData, setFormData] = useState({
     title: "",
-    experience: "",
+    company: "",
     location: "",
-    status: "Active",
+    experience: "",
+    skills: "",
+    description: "",
   });
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData({
+        title: initialData.title || "",
+        company: initialData.company || "",
+        location: initialData.location || "",
+        experience: initialData.experience || "",
+        skills: initialData.skills || "",
+        description: initialData.description || "",
+      });
     }
   }, [initialData]);
 
@@ -24,14 +33,7 @@ function JobForm({ onSave, onClose, initialData }) {
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (initialData) {
-      onSave(formData);
-    } else {
-      onSave({
-        id: Date.now(),
-        ...formData,
-      });
-    }
+    onSave(formData);
 
     onClose();
   }
@@ -53,9 +55,9 @@ function JobForm({ onSave, onClose, initialData }) {
 
       <input
         type="text"
-        name="experience"
-        placeholder="Experience"
-        value={formData.experience}
+        name="company"
+        placeholder="Company Name"
+        value={formData.company}
         onChange={handleChange}
         className="w-full p-3 rounded-xl bg-slate-800"
         required
@@ -71,15 +73,35 @@ function JobForm({ onSave, onClose, initialData }) {
         required
       />
 
-      <select
-        name="status"
-        value={formData.status}
+      <input
+        type="text"
+        name="experience"
+        placeholder="Experience (Example: 1-3 Years)"
+        value={formData.experience}
         onChange={handleChange}
         className="w-full p-3 rounded-xl bg-slate-800"
-      >
-        <option>Active</option>
-        <option>Closed</option>
-      </select>
+        required
+      />
+
+      <textarea
+        name="skills"
+        placeholder="Skills (Example: Python, FastAPI, PostgreSQL)"
+        value={formData.skills}
+        onChange={handleChange}
+        rows="3"
+        className="w-full p-3 rounded-xl bg-slate-800"
+        required
+      />
+
+      <textarea
+        name="description"
+        placeholder="Job Description"
+        value={formData.description}
+        onChange={handleChange}
+        rows="5"
+        className="w-full p-3 rounded-xl bg-slate-800"
+        required
+      />
 
       <div className="flex justify-end gap-3">
         <button

@@ -3,20 +3,14 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 function JobTable({
   jobs,
   search,
-  status,
   onDelete,
   onEdit,
 }) {
-  const filteredJobs = jobs.filter((job) => {
-    const matchSearch = job.title
+  const filteredJobs = jobs.filter((job) =>
+    job.title
       .toLowerCase()
-      .includes(search.toLowerCase());
-
-    const matchStatus =
-      status === "All" || job.status === status;
-
-    return matchSearch && matchStatus;
-  });
+      .includes(search.toLowerCase())
+  );
 
   function handleDelete(id) {
     if (window.confirm("Delete this job?")) {
@@ -25,15 +19,15 @@ function JobTable({
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
+    <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 p-6 overflow-x-auto">
       <table className="w-full">
         <thead>
           <tr className="border-b border-white/10">
-            <th className="text-left pb-4">Job Title</th>
-            <th className="text-left">Experience</th>
+            <th className="text-left pb-4">Title</th>
+            <th className="text-left">Company</th>
             <th className="text-left">Location</th>
-            <th className="text-left">Status</th>
-            <th className="text-left">Action</th>
+            <th className="text-left">Experience</th>
+            <th className="text-left">Actions</th>
           </tr>
         </thead>
 
@@ -47,21 +41,11 @@ function JobTable({
                 {job.title}
               </td>
 
-              <td>{job.experience}</td>
+              <td>{job.company}</td>
 
               <td>{job.location}</td>
 
-              <td>
-                <span
-                  className={`px-3 py-1 rounded-full ${
-                    job.status === "Active"
-                      ? "bg-green-600"
-                      : "bg-red-600"
-                  }`}
-                >
-                  {job.status}
-                </span>
-              </td>
+              <td>{job.experience}</td>
 
               <td>
                 <div className="flex gap-4">
