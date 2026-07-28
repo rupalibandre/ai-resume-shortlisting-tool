@@ -1,44 +1,57 @@
-import ResumeCard from "./ResumeCard";
+function ResumeList({ result }) {
 
-const resumes = [
-  {
-    id: 1,
-    name: "Rahul_Shinde.pdf",
-    score: 92,
-    status: "Shortlisted",
-  },
-  {
-    id: 2,
-    name: "Priya_Patil.pdf",
-    score: 84,
-    status: "Pending",
-  },
-  {
-    id: 3,
-    name: "Aman_Kumar.pdf",
-    score: 68,
-    status: "Rejected",
-  },
-];
+  if (!result) {
+    return null;
+  }
 
-function ResumeList() {
   return (
-    <div className="space-y-4">
 
-      <h2 className="text-2xl font-bold">
-        Recent Uploads
+    <div className="bg-white/10 rounded-2xl p-6">
+
+      <h2 className="text-2xl font-bold mb-6">
+        AI Match Result
       </h2>
 
-      {resumes.map((resume) => (
-        <ResumeCard
-          key={resume.id}
-          name={resume.name}
-          score={resume.score}
-          status={resume.status}
-        />
-      ))}
+      <div className="space-y-3">
+
+        <p>
+          <strong>Name :</strong> {result.candidate.name}
+        </p>
+
+        <p>
+          <strong>Job :</strong> {result.candidate.job_title}
+        </p>
+
+        <p>
+          <strong>Company :</strong> {result.candidate.company}
+        </p>
+
+        <p>
+          <strong>Match :</strong> {result.candidate.match_percentage}%
+        </p>
+
+        <p>
+          <strong>Status :</strong> {result.candidate.status}
+        </p>
+
+      </div>
+
+      <div className="mt-6">
+
+        <h3 className="font-bold text-xl mb-2">
+          AI Analysis
+        </h3>
+
+        <div className="bg-slate-900 rounded-xl p-4 whitespace-pre-wrap">
+          {typeof result.ai_result === "string"
+            ? result.ai_result
+            : JSON.stringify(result.ai_result, null, 2)}
+        </div>
+
+      </div>
 
     </div>
+
   );
 }
 

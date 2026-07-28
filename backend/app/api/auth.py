@@ -85,7 +85,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "user": {
             "id": db_user.id,
-            "name": db_user.full_name,
+            "full_name": db_user.full_name,
             "email": db_user.email,
             "role": db_user.role,
         },
@@ -93,8 +93,28 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 
 
 @router.get("/me")
-def get_me(current_user=Depends(get_current_user)):
+def get_me(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+
+    user = (
+        db.query(User)
+        .filter(User.email == current_user["sub"])
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
     return {
-        "message": "Authorized User",
-        "user": current_user,
+        "user": {
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+            "role": user.role,
+        }
     }

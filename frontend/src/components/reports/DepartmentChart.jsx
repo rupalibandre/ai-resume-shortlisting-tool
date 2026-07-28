@@ -7,51 +7,68 @@ import {
   Legend,
 } from "recharts";
 
-const data = [
-  { name: "Frontend", value: 22 },
-  { name: "Backend", value: 18 },
-  { name: "UI/UX", value: 12 },
-  { name: "QA", value: 8 },
-  { name: "DevOps", value: 6 },
-];
+function DepartmentChart({ report }) {
 
-const COLORS = [
-  "#3b82f6",
-  "#22c55e",
-  "#f59e0b",
-  "#ef4444",
-  "#8b5cf6",
-];
+  const data = [
+    {
+      name: "Shortlisted",
+      value: report.shortlisted,
+    },
+    {
+      name: "Rejected",
+      value: report.rejected,
+    },
+    {
+      name: "Pending",
+      value: report.pending,
+    },
+  ];
 
-function DepartmentChart() {
+  const COLORS = [
+    "#22c55e",
+    "#ef4444",
+    "#f59e0b",
+  ];
+
   return (
     <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
 
       <h2 className="text-2xl font-bold mb-6">
-        Department Hiring
+        Candidate Status Distribution
       </h2>
 
-      <ResponsiveContainer width="100%" height={320}>
+      <ResponsiveContainer
+        width="100%"
+        height={320}
+      >
+
         <PieChart>
 
           <Pie
             data={data}
             dataKey="value"
+            nameKey="name"
             outerRadius={100}
             label
           >
+
             {data.map((entry, index) => (
+
               <Cell
                 key={index}
-                fill={COLORS[index % COLORS.length]}
+                fill={COLORS[index]}
               />
+
             ))}
+
           </Pie>
 
           <Tooltip />
+
           <Legend />
 
         </PieChart>
+
       </ResponsiveContainer>
 
     </div>

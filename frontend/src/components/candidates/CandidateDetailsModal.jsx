@@ -36,7 +36,7 @@ function CandidateDetailsModal({
 
           <div className="space-y-8">
 
-            <ResumeViewer />
+            <ResumeViewer filename={candidate.filename} />
 
             <CandidateNotes />
 

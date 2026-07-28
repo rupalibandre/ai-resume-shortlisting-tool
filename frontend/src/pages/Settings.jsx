@@ -1,6 +1,6 @@
 import ProfileSettings from "../components/settings/ProfileSettings";
-import CompanySettings from "../components/settings/CompanySettings";
 import SecuritySettings from "../components/settings/SecuritySettings";
+import CompanySettings from "../components/settings/CompanySettings";
 
 function Settings() {
   return (
@@ -13,20 +13,16 @@ function Settings() {
         </h1>
 
         <p className="text-gray-400 mt-2">
-          Manage your account and company preferences.
+          Manage your account and company settings.
         </p>
 
       </div>
 
-      <div className="grid xl:grid-cols-2 gap-8">
-
-        <ProfileSettings />
-
-        <CompanySettings />
-
-      </div>
+      <ProfileSettings />
 
       <SecuritySettings />
+
+      <CompanySettings />
 
     </div>
   );

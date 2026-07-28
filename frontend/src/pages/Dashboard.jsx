@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import api from "../services/api";
+
 import AnalyticsChart from "../components/dashboard/AnalyticsChart";
 import TopSkills from "../components/dashboard/TopSkills";
 import RecentCandidates from "../components/dashboard/RecentCandidates";
@@ -11,28 +14,51 @@ import {
 } from "react-icons/fa";
 
 function Dashboard() {
-  const stats = [
+  const [stats, setStats] = useState({
+    total_jobs: 0,
+    total_candidates: 0,
+    shortlisted: 0,
+    rejected: 0,
+    pending: 0,
+    average_match: 0,
+    recent_candidates: [],
+  });
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  async function loadDashboard() {
+    try {
+      const response = await api.get("/dashboard/");
+      setStats(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const cards = [
     {
       title: "Total Jobs",
-      value: 15,
+      value: stats.total_jobs,
       icon: <FaBriefcase />,
       color: "text-blue-400",
     },
     {
       title: "Candidates",
-      value: 182,
+      value: stats.total_candidates,
       icon: <FaUsers />,
       color: "text-green-400",
     },
     {
       title: "Shortlisted",
-      value: 49,
+      value: stats.shortlisted,
       icon: <FaCheckCircle />,
       color: "text-purple-400",
     },
     {
       title: "Rejected",
-      value: 31,
+      value: stats.rejected,
       icon: <FaTimesCircle />,
       color: "text-red-400",
     },
@@ -40,9 +66,10 @@ function Dashboard() {
 
   return (
     <div>
-      {/* Stats Cards */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        {stats.map((item) => (
+
+        {cards.map((item) => (
           <StatCard
             key={item.title}
             title={item.title}
@@ -51,19 +78,25 @@ function Dashboard() {
             color={item.color}
           />
         ))}
+
       </div>
 
-      {/* Analytics Section */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-8">
+
         <div className="xl:col-span-2">
-          <AnalyticsChart />
+          <AnalyticsChart
+            average={stats.average_match}
+          />
         </div>
 
         <TopSkills />
+
       </div>
 
-      {/* Recent Candidates */}
-      <RecentCandidates />
+      <RecentCandidates
+        candidates={stats.recent_candidates}
+      />
+
     </div>
   );
 }

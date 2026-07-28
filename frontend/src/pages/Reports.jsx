@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import api from "../services/api";
+
 import ReportStats from "../components/reports/ReportStats";
 import HiringChart from "../components/reports/HiringChart";
 import DepartmentChart from "../components/reports/DepartmentChart";
@@ -5,6 +8,34 @@ import TopSkillsChart from "../components/reports/TopSkillsChart";
 import ExportButtons from "../components/reports/ExportButtons";
 
 function Reports() {
+
+  const [report, setReport] = useState({
+    total_jobs: 0,
+    total_candidates: 0,
+    shortlisted: 0,
+    rejected: 0,
+    pending: 0,
+    average_match: 0,
+  });
+
+  useEffect(() => {
+    loadReport();
+  }, []);
+
+  async function loadReport() {
+    try {
+
+      const response = await api.get("/reports/");
+
+      setReport(response.data);
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+  }
+
   return (
     <div className="space-y-8">
 
@@ -26,15 +57,15 @@ function Reports() {
 
       </div>
 
-      <ReportStats />
+      <ReportStats report={report} />
 
-      <HiringChart />
+      <HiringChart report={report} />
 
       <div className="grid xl:grid-cols-2 gap-8">
 
-        <DepartmentChart />
+        <DepartmentChart report={report} />
 
-        <TopSkillsChart />
+        <TopSkillsChart report={report} />
 
       </div>
 

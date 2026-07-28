@@ -1,11 +1,22 @@
 from pathlib import Path
 import shutil
+import re
 
-from fastapi import APIRouter, File, UploadFile, HTTPException, Form, Depends
+from fastapi import (
+    APIRouter,
+    File,
+    UploadFile,
+    HTTPException,
+    Form,
+    Depends,
+)
+from fastapi.responses import FileResponse
+
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
 from app.models.job import Job
+from app.models.candidate import Candidate
 
 from app.services.resume_parser import extract_text
 from app.services.groq_service import ai_resume_match
@@ -61,12 +72,65 @@ async def match_resume(
         job.description,
     )
 
+    candidate_name = file.filename.replace(extension, "")
+
+    first_line = resume_text.split("\n")[0].strip()
+
+    if 3 < len(first_line) < 50:
+        candidate_name = first_line
+
+    match_percentage = 0
+
+    numbers = re.findall(r"\d+", str(ai_result))
+
+    for number in numbers:
+
+        value = int(number)
+
+        if 0 <= value <= 100:
+            match_percentage = value
+            break
+
+    candidate = Candidate(
+        name=candidate_name,
+        filename=file.filename,
+        job_title=job.title,
+        company=job.company,
+        match_percentage=match_percentage,
+        status="Pending",
+    )
+
+    db.add(candidate)
+    db.commit()
+    db.refresh(candidate)
+
     return {
-        "filename": file.filename,
-        "job": {
-            "id": job.id,
-            "title": job.title,
-            "company": job.company,
+        "candidate": {
+            "id": candidate.id,
+            "name": candidate.name,
+            "filename": candidate.filename,
+            "job_title": candidate.job_title,
+            "company": candidate.company,
+            "match_percentage": candidate.match_percentage,
+            "status": candidate.status,
         },
         "ai_result": ai_result,
     }
+
+
+@router.get("/view/{filename}")
+def view_resume(filename: str):
+
+    file_path = Path(UPLOAD_FOLDER) / filename
+
+    if not file_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="Resume not found",
+        )
+
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        media_type="application/pdf",
+    )

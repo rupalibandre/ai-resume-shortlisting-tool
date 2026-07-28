@@ -1,45 +1,65 @@
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   Tooltip,
+  CartesianGrid,
 } from "recharts";
 
-const data = [
-  { month: "Jan", hired: 12 },
-  { month: "Feb", hired: 18 },
-  { month: "Mar", hired: 15 },
-  { month: "Apr", hired: 24 },
-  { month: "May", hired: 28 },
-  { month: "Jun", hired: 34 },
-];
+function HiringChart({ report }) {
 
-function HiringChart() {
+  const data = [
+    {
+      name: "Jobs",
+      value: report.total_jobs,
+    },
+    {
+      name: "Candidates",
+      value: report.total_candidates,
+    },
+    {
+      name: "Shortlisted",
+      value: report.shortlisted,
+    },
+    {
+      name: "Rejected",
+      value: report.rejected,
+    },
+    {
+      name: "Pending",
+      value: report.pending,
+    },
+  ];
+
   return (
     <div className="bg-white/10 border border-white/10 rounded-2xl p-6">
 
       <h2 className="text-2xl font-bold mb-6">
-        Monthly Hiring
+        Recruitment Summary
       </h2>
 
       <ResponsiveContainer
         width="100%"
         height={350}
       >
-        <AreaChart data={data}>
 
-          <XAxis dataKey="month" />
+        <BarChart data={data}>
+
+          <CartesianGrid strokeDasharray="3 3" />
+
+          <XAxis dataKey="name" />
 
           <Tooltip />
 
-          <Area
-            dataKey="hired"
-            stroke="#3b82f6"
+          <Bar
+            dataKey="value"
             fill="#2563eb"
+            radius={[8, 8, 0, 0]}
           />
 
-        </AreaChart>
+        </BarChart>
+
       </ResponsiveContainer>
 
     </div>

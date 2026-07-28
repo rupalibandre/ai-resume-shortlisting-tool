@@ -1,76 +1,107 @@
+import {
+  FaEye,
+  FaTrash,
+  FaCheck,
+  FaTimes,
+} from "react-icons/fa";
+
 function CandidateCard({
   candidate,
   onView,
+  onDelete,
+  onStatusChange,
 }) {
+  function badgeColor(status) {
+    if (status === "Shortlisted")
+      return "bg-green-600";
+
+    if (status === "Rejected")
+      return "bg-red-600";
+
+    return "bg-yellow-500";
+  }
+
   return (
-    <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-blue-500 transition">
+    <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/10 hover:border-blue-500 transition">
 
-      <div className="flex justify-between">
+      <h2 className="text-2xl font-bold">
+        {candidate.name}
+      </h2>
 
-        <div>
+      <p className="mt-3">
+        📄 {candidate.filename}
+      </p>
 
-          <h2 className="text-2xl font-bold">
-            {candidate.name}
-          </h2>
+      <p>
+        💼 {candidate.job_title}
+      </p>
 
-          <p className="text-gray-400 mt-2">
-            {candidate.role}
-          </p>
+      <p>
+        🏢 {candidate.company}
+      </p>
 
-          <p className="text-gray-500 mt-1">
-            {candidate.experience}
-          </p>
+      <div className="mt-5">
 
+        <div className="flex justify-between mb-2">
+          <span>Match</span>
+          <span>{candidate.match_percentage}%</span>
         </div>
 
-        <div>
-
-          <h2 className="text-3xl text-blue-400 font-bold">
-            {candidate.score}%
-          </h2>
-
-          <p className="text-gray-400">
-            AI Score
-          </p>
-
-        </div>
-
-      </div>
-
-      <div className="mt-6">
-
-        <div className="w-full bg-slate-700 rounded-full h-3">
-
+        <div className="w-full bg-gray-700 rounded-full h-3">
           <div
             className="bg-blue-500 h-3 rounded-full"
             style={{
-              width: `${candidate.score}%`,
+              width: `${candidate.match_percentage}%`,
             }}
           />
-
         </div>
 
       </div>
 
-      <div className="flex justify-between items-center mt-6">
+      <div className="mt-5 flex justify-between items-center">
 
         <span
-          className={`px-4 py-2 rounded-full ${
-            candidate.status === "Shortlisted"
-              ? "bg-green-600"
-              : candidate.status === "Pending"
-              ? "bg-yellow-600"
-              : "bg-red-600"
-          }`}
+          className={`${badgeColor(
+            candidate.status
+          )} px-4 py-2 rounded-full`}
         >
           {candidate.status}
         </span>
 
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mt-6">
+
+        <button
+          onClick={() => onStatusChange(candidate.id, "Shortlisted")}
+          className="bg-green-600 hover:bg-green-700 p-3 rounded-xl flex justify-center items-center gap-2"
+        >
+          <FaCheck />
+          Shortlist
+        </button>
+
+        <button
+          onClick={() => onStatusChange(candidate.id, "Rejected")}
+          className="bg-red-600 hover:bg-red-700 p-3 rounded-xl flex justify-center items-center gap-2"
+        >
+          <FaTimes />
+          Reject
+        </button>
+
         <button
           onClick={() => onView(candidate)}
-          className="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg"
+          className="bg-blue-600 hover:bg-blue-700 p-3 rounded-xl flex justify-center items-center gap-2"
         >
-          View Details
+          <FaEye />
+          Details
+        </button>
+
+        <button
+          onClick={() => onDelete(candidate.id)}
+          className="bg-gray-700 hover:bg-gray-800 p-3 rounded-xl flex justify-center items-center gap-2"
+        >
+          <FaTrash />
+          Delete
         </button>
 
       </div>

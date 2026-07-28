@@ -50,6 +50,7 @@ function UploadZone({ setResult }) {
           },
         }
       );
+      console.log(response.data);
 
       setResult(response.data);
 

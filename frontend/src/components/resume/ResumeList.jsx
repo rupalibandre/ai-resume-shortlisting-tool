@@ -13,6 +13,7 @@ function ResumeList({ result }) {
     );
   }
 
+  const candidate = result.candidate;
   const ai = result.ai_result;
 
   return (
@@ -23,17 +24,27 @@ function ResumeList({ result }) {
       </h2>
 
       <div className="space-y-3 mb-8">
+
         <p>
-          <strong>Resume:</strong> {result.filename}
+          <strong>Resume:</strong> {candidate.filename}
         </p>
 
         <p>
-          <strong>Job:</strong> {result.job.title}
+          <strong>Candidate:</strong> {candidate.name}
         </p>
 
         <p>
-          <strong>Company:</strong> {result.job.company}
+          <strong>Job:</strong> {candidate.job_title}
         </p>
+
+        <p>
+          <strong>Company:</strong> {candidate.company}
+        </p>
+
+        <p>
+          <strong>Status:</strong> {candidate.status}
+        </p>
+
       </div>
 
       <div className="bg-blue-600 rounded-2xl p-6 text-center mb-8">
@@ -51,27 +62,31 @@ function ResumeList({ result }) {
       <div className="grid md:grid-cols-2 gap-8">
 
         <div>
+
           <h3 className="text-xl font-bold text-green-400 mb-3">
             Matched Skills
           </h3>
 
           <ul className="space-y-2">
-            {ai.matched_skills.map((skill, index) => (
+            {ai.matched_skills?.map((skill, index) => (
               <li key={index}>✅ {skill}</li>
             ))}
           </ul>
+
         </div>
 
         <div>
+
           <h3 className="text-xl font-bold text-red-400 mb-3">
             Missing Skills
           </h3>
 
           <ul className="space-y-2">
-            {ai.missing_skills.map((skill, index) => (
+            {ai.missing_skills?.map((skill, index) => (
               <li key={index}>❌ {skill}</li>
             ))}
           </ul>
+
         </div>
 
       </div>
@@ -79,27 +94,31 @@ function ResumeList({ result }) {
       <div className="grid md:grid-cols-2 gap-8 mt-8">
 
         <div>
+
           <h3 className="text-xl font-bold mb-3">
             Strengths
           </h3>
 
           <ul className="space-y-2">
-            {ai.strengths.map((item, index) => (
+            {ai.strengths?.map((item, index) => (
               <li key={index}>💪 {item}</li>
             ))}
           </ul>
+
         </div>
 
         <div>
+
           <h3 className="text-xl font-bold mb-3">
             Weaknesses
           </h3>
 
           <ul className="space-y-2">
-            {ai.weaknesses.map((item, index) => (
+            {ai.weaknesses?.map((item, index) => (
               <li key={index}>⚠️ {item}</li>
             ))}
           </ul>
+
         </div>
 
       </div>

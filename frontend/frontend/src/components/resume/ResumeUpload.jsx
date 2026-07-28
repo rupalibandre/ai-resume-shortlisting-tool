@@ -1,11 +1,17 @@
+import { useState } from "react";
+
 import UploadZone from "./UploadZone";
 import ResumeList from "./ResumeList";
 
 function ResumeUpload() {
+
+  const [result, setResult] = useState(null);
+
   return (
     <div className="space-y-8">
 
       <div>
+
         <h1 className="text-4xl font-bold">
           Resume Upload
         </h1>
@@ -13,11 +19,16 @@ function ResumeUpload() {
         <p className="text-gray-400 mt-2">
           Upload resumes to analyze and shortlist candidates.
         </p>
+
       </div>
 
-      <UploadZone />
+      <UploadZone
+        setResult={setResult}
+      />
 
-      <ResumeList />
+      <ResumeList
+        result={result}
+      />
 
     </div>
   );

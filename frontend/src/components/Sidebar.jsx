@@ -8,17 +8,57 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 
-import { NavLink } from "react-router-dom";
+import {
+  NavLink,
+  useNavigate,
+} from "react-router-dom";
 
 function Sidebar() {
+
+  const navigate = useNavigate();
+
   const menu = [
-    { title: "Dashboard", icon: <FaHome />, path: "/dashboard" },
-    { title: "Jobs", icon: <FaBriefcase />, path: "/jobs" },
-    { title: "Candidates", icon: <FaUsers />, path: "/candidates" },
-    { title: "Upload Resume", icon: <FaFileUpload />, path: "/upload-resume" },
-    { title: "Reports", icon: <FaChartBar />, path: "/reports" },
-    { title: "Settings", icon: <FaCog />, path: "/settings" },
+    {
+      title: "Dashboard",
+      icon: <FaHome />,
+      path: "/dashboard",
+    },
+    {
+      title: "Jobs",
+      icon: <FaBriefcase />,
+      path: "/jobs",
+    },
+    {
+      title: "Candidates",
+      icon: <FaUsers />,
+      path: "/candidates",
+    },
+    {
+      title: "Upload Resume",
+      icon: <FaFileUpload />,
+      path: "/upload-resume",
+    },
+    {
+      title: "Reports",
+      icon: <FaChartBar />,
+      path: "/reports",
+    },
+    {
+      title: "Settings",
+      icon: <FaCog />,
+      path: "/settings",
+    },
   ];
+
+  function handleLogout() {
+
+    localStorage.removeItem("token");
+
+    alert("Logged Out Successfully ✅");
+
+    navigate("/");
+
+  }
 
   return (
     <div className="w-72 h-screen bg-white/10 backdrop-blur-xl border-r border-white/10 p-6 fixed">
@@ -32,7 +72,9 @@ function Sidebar() {
       </p>
 
       <div className="mt-10 space-y-2">
+
         {menu.map((item) => (
+
           <NavLink
             key={item.title}
             to={item.path}
@@ -44,16 +86,26 @@ function Sidebar() {
               }`
             }
           >
-            <span className="text-xl">{item.icon}</span>
+            <span className="text-xl">
+              {item.icon}
+            </span>
+
             <span>{item.title}</span>
+
           </NavLink>
+
         ))}
+
       </div>
 
-      <button className="absolute bottom-8 left-6 right-6 bg-red-600 hover:bg-red-700 p-3 rounded-xl">
+      <button
+        onClick={handleLogout}
+        className="absolute bottom-8 left-6 right-6 bg-red-600 hover:bg-red-700 p-3 rounded-xl"
+      >
         <FaSignOutAlt className="inline mr-2" />
         Logout
       </button>
+
     </div>
   );
 }

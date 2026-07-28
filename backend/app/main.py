@@ -7,6 +7,9 @@ from app.api.auth import router as auth_router
 from app.api.resume import router as resume_router
 from app.api.jobs import router as jobs_router
 from app.api.ai import router as ai_router
+from app.api.candidates import router as candidates_router
+from app.api.reports import router as reports_router
+from app.api.interview import router as interview_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -15,7 +18,6 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -30,6 +32,9 @@ app.include_router(auth_router)
 app.include_router(resume_router)
 app.include_router(jobs_router)
 app.include_router(ai_router)
+app.include_router(candidates_router)
+app.include_router(reports_router)
+app.include_router(interview_router)
 
 
 @app.get("/")

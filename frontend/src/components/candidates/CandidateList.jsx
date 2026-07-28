@@ -1,103 +1,164 @@
-import { useState } from "react";
-import CandidateSearch from "./CandidateSearch";
+import { useEffect, useState } from "react";
+import api from "../../services/api";
+
 import CandidateCard from "./CandidateCard";
-import CandidateStats from "./CandidateStats";
 import CandidateDetailsModal from "./CandidateDetailsModal";
 
-const candidates = [
-  {
-    id: 1,
-    name: "Rahul Sharma",
-    role: "React Developer",
-    experience: "2 Years",
-    score: 92,
-    status: "Shortlisted",
-  },
-  {
-    id: 2,
-    name: "Priya Patil",
-    role: "Python Developer",
-    experience: "3 Years",
-    score: 85,
-    status: "Pending",
-  },
-  {
-    id: 3,
-    name: "Aman Kumar",
-    role: "UI/UX Designer",
-    experience: "1 Year",
-    score: 68,
-    status: "Rejected",
-  },
-  {
-    id: 4,
-    name: "Neha Singh",
-    role: "Java Developer",
-    experience: "4 Years",
-    score: 95,
-    status: "Shortlisted",
-  },
-];
-
 function CandidateList() {
+  const [candidates, setCandidates] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("All");
+
+  const [statusFilter, setStatusFilter] = useState("All");
+
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
+  const [openModal, setOpenModal] = useState(false);
+
+  useEffect(() => {
+    loadCandidates();
+  }, []);
+
+  async function loadCandidates() {
+    try {
+      const response = await api.get("/candidates/");
+
+      setCandidates(response.data.candidates);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function updateStatus(id, status) {
+    try {
+      await api.put(`/candidates/${id}/status`, null, {
+        params: {
+          status: status,
+        },
+      });
+
+      loadCandidates();
+
+    } catch (error) {
+      console.error(error);
+      alert("Status Update Failed");
+    }
+  }
+
+  async function deleteCandidate(id) {
+
+    const confirmDelete = window.confirm(
+      "Delete this candidate?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+
+      await api.delete(`/candidates/${id}`);
+
+      loadCandidates();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert("Delete Failed");
+
+    }
+
+  }
+
+  function openDetails(candidate) {
+    setSelectedCandidate(candidate);
+
+    setOpenModal(true);
+  }
+
   const filteredCandidates = candidates.filter((candidate) => {
-    const matchSearch =
-      candidate.name.toLowerCase().includes(search.toLowerCase()) ||
-      candidate.role.toLowerCase().includes(search.toLowerCase());
 
-    const matchStatus =
-      status === "All" || candidate.status === status;
+    const nameMatch =
+      candidate.name
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
 
-    return matchSearch && matchStatus;
+    const statusMatch =
+      statusFilter === "All"
+        ? true
+        : candidate.status === statusFilter;
+
+    return nameMatch && statusMatch;
+
   });
 
+  if (loading) {
+    return (
+      <h2 className="text-center text-2xl">
+        Loading Candidates...
+      </h2>
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <>
+      <div className="flex gap-4 mb-8">
 
-      <CandidateStats />
+        <input
+          type="text"
+          placeholder="Search Candidate..."
+          value={search}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
+          className="flex-1 bg-slate-800 rounded-xl p-3"
+        />
 
-      <div>
+        <select
+          value={statusFilter}
+          onChange={(e) =>
+            setStatusFilter(e.target.value)
+          }
+          className="bg-slate-800 rounded-xl p-3"
+        >
 
-        <h1 className="text-4xl font-bold">
-          Candidates
-        </h1>
+          <option>All</option>
 
-        <p className="text-gray-400 mt-2">
-          AI Candidate Management
-        </p>
+          <option>Pending</option>
+
+          <option>Shortlisted</option>
+
+          <option>Rejected</option>
+
+        </select>
 
       </div>
 
-      <CandidateSearch
-        search={search}
-        setSearch={setSearch}
-        status={status}
-        setStatus={setStatus}
-      />
-
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-6">
 
         {filteredCandidates.map((candidate) => (
+
           <CandidateCard
             key={candidate.id}
             candidate={candidate}
-            onView={setSelectedCandidate}
+            onView={openDetails}
+            onDelete={deleteCandidate}
+            onStatusChange={updateStatus}
           />
+
         ))}
 
       </div>
 
       <CandidateDetailsModal
-        isOpen={selectedCandidate !== null}
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
         candidate={selectedCandidate}
-        onClose={() => setSelectedCandidate(null)}
       />
-
-    </div>
+    </>
   );
 }
 
