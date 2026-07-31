@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
@@ -20,7 +20,10 @@ router = APIRouter(
 
 
 @router.post("/register")
-def register(user: UserCreate, db: Session = Depends(get_db)):
+def register(
+    user: UserCreate,
+    db: Session = Depends(get_db),
+):
 
     existing_user = (
         db.query(User)
@@ -29,15 +32,17 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     )
 
     if existing_user:
+
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
 
     new_user = User(
         full_name=user.full_name,
-        email=user.email,
+        email=user.email.lower(),
         password=hash_password(user.password),
+        role="HR",
     )
 
     db.add(new_user)
@@ -45,23 +50,32 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
 
     return {
-        "message": "User Registered Successfully",
-        "user_id": new_user.id,
+        "message": "Registration Successful",
+        "user": {
+            "id": new_user.id,
+            "name": new_user.full_name,
+            "email": new_user.email,
+            "role": new_user.role,
+        },
     }
 
 
 @router.post("/login")
-def login(user: UserLogin, db: Session = Depends(get_db)):
+def login(
+    user: UserLogin,
+    db: Session = Depends(get_db),
+):
 
     db_user = (
         db.query(User)
-        .filter(User.email == user.email)
+        .filter(User.email == user.email.lower())
         .first()
     )
 
     if not db_user:
+
         raise HTTPException(
-            status_code=401,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Email or Password",
         )
 
@@ -69,14 +83,18 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         user.password,
         db_user.password,
     ):
+
         raise HTTPException(
-            status_code=401,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Email or Password",
         )
 
     access_token = create_access_token(
         {
             "sub": db_user.email,
+            "id": db_user.id,
+            "name": db_user.full_name,
+            "role": db_user.role,
         }
     )
 
@@ -85,7 +103,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "user": {
             "id": db_user.id,
-            "full_name": db_user.full_name,
+            "name": db_user.full_name,
             "email": db_user.email,
             "role": db_user.role,
         },
@@ -93,28 +111,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 
 
 @router.get("/me")
-def get_me(
+def me(
     current_user=Depends(get_current_user),
-    db: Session = Depends(get_db),
 ):
-
-    user = (
-        db.query(User)
-        .filter(User.email == current_user["sub"])
-        .first()
-    )
-
-    if not user:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found",
-        )
-
-    return {
-        "user": {
-            "id": user.id,
-            "full_name": user.full_name,
-            "email": user.email,
-            "role": user.role,
-        }
-    }
+    return current_user

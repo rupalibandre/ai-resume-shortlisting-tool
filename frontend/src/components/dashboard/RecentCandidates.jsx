@@ -1,101 +1,171 @@
-function RecentCandidates({ candidates = [] }) {
+import { Link } from "react-router-dom";
 
-  function getStatusColor(status) {
+function badgeColor(status) {
 
-    if (status === "Shortlisted")
+  switch (status) {
+
+    case "Selected":
       return "bg-green-600";
 
-    if (status === "Rejected")
+    case "Shortlisted":
+      return "bg-blue-600";
+
+    case "Interview":
+      return "bg-yellow-500";
+
+    case "Rejected":
       return "bg-red-600";
 
-    return "bg-yellow-500";
+    default:
+      return "bg-gray-600";
+
   }
 
+}
+
+function scoreColor(score) {
+
+  if (score >= 80) return "text-green-400";
+
+  if (score >= 60) return "text-yellow-400";
+
+  return "text-red-400";
+
+}
+
+function RecentCandidates({ candidates = [] }) {
+
   return (
-    <div className="mt-8 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
 
-      <h2 className="text-2xl font-semibold mb-6">
-        Recent Candidates
-      </h2>
+    <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
 
-      <table className="w-full">
+      <div className="flex justify-between items-center mb-6">
 
-        <thead>
+        <h2 className="text-2xl font-bold">
+          Recent Candidates
+        </h2>
 
-          <tr className="text-left border-b border-white/10">
+      </div>
 
-            <th className="pb-4">Name</th>
+      <div className="overflow-x-auto">
 
-            <th className="pb-4">Job</th>
+        <table className="w-full">
 
-            <th className="pb-4">Match</th>
+          <thead>
 
-            <th className="pb-4">Status</th>
+            <tr className="text-left border-b border-white/10">
 
-          </tr>
+              <th className="py-3">Candidate</th>
 
-        </thead>
+              <th>Job</th>
 
-        <tbody>
+              <th>Company</th>
 
-          {candidates.length === 0 ? (
+              <th>AI Score</th>
 
-            <tr>
+              <th>Status</th>
 
-              <td
-                colSpan="4"
-                className="py-8 text-center text-gray-400"
-              >
-                No Candidates Found
-              </td>
+              <th></th>
 
             </tr>
 
-          ) : (
+          </thead>
 
-            candidates.map((candidate) => (
+          <tbody>
 
-              <tr
-                key={candidate.id}
-                className="border-b border-white/5"
-              >
+            {candidates.length === 0 ? (
 
-                <td className="py-4">
-                  {candidate.name}
-                </td>
+              <tr>
 
-                <td>
-                  {candidate.job_title}
-                </td>
+                <td
+                  colSpan="6"
+                  className="text-center py-10 text-gray-400"
+                >
 
-                <td>
-                  {candidate.match_percentage}%
-                </td>
-
-                <td>
-
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
-                      candidate.status
-                    )}`}
-                  >
-                    {candidate.status}
-                  </span>
+                  No Candidates Found
 
                 </td>
 
               </tr>
 
-            ))
+            ) : (
 
-          )}
+              candidates.map((candidate) => (
 
-        </tbody>
+                <tr
+                  key={candidate.id}
+                  className="border-b border-white/5 hover:bg-white/5"
+                >
 
-      </table>
+                  <td className="py-4">
+
+                    {candidate.name}
+
+                  </td>
+
+                  <td>
+
+                    {candidate.job}
+
+                  </td>
+
+                  <td>
+
+                    {candidate.company}
+
+                  </td>
+
+                  <td
+                    className={`font-bold ${scoreColor(candidate.score)}`}
+                  >
+
+                    {candidate.score}%
+
+                  </td>
+
+                  <td>
+
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm ${badgeColor(
+                        candidate.status
+                      )}`}
+                    >
+
+                      {candidate.status}
+
+                    </span>
+
+                  </td>
+
+                  <td>
+
+                    <Link
+                      to={`/candidate/${candidate.id}`}
+                      className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm"
+                    >
+
+                      View
+
+                    </Link>
+
+                  </td>
+
+                </tr>
+
+              ))
+
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
 
     </div>
+
   );
+
 }
 
 export default RecentCandidates;

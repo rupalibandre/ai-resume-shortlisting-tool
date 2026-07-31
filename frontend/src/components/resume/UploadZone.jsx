@@ -3,6 +3,7 @@ import { FaCloudUploadAlt } from "react-icons/fa";
 import api from "../../services/api";
 
 function UploadZone({ setResult }) {
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -15,14 +16,19 @@ function UploadZone({ setResult }) {
 
   async function loadJobs() {
     try {
+
       const response = await api.get("/jobs/");
-      setJobs(response.data.jobs);
+      setJobs(response.data.jobs || []);
+
     } catch (error) {
+
       console.error(error);
+
     }
   }
 
   async function handleUpload() {
+
     if (!selectedJob) {
       alert("Please select a job.");
       return;
@@ -39,6 +45,7 @@ function UploadZone({ setResult }) {
     formData.append("file", selectedFile);
 
     try {
+
       setLoading(true);
 
       const response = await api.post(
@@ -50,20 +57,48 @@ function UploadZone({ setResult }) {
           },
         }
       );
+
+      console.log("SUCCESS");
       console.log(response.data);
 
-      setResult(response.data);
+      setResult(response.data.candidate);
 
       alert("Resume Matched Successfully ✅");
 
     } catch (error) {
-      console.error(error);
-      alert("Matching Failed ❌");
+
+      console.log("========== BACKEND ERROR ==========");
+      console.log(error);
+
+      if (error.response) {
+
+        console.log(error.response.status);
+        console.log(error.response.data);
+
+        alert(
+          JSON.stringify(
+            error.response.data,
+            null,
+            2
+          )
+        );
+
+      } else {
+
+        alert(error.message);
+
+      }
+
     } finally {
+
       setLoading(false);
+
     }
+
   }
-    return (
+
+  return (
+
     <div className="border-2 border-dashed border-blue-500 rounded-3xl p-16 bg-white/5 text-center hover:bg-white/10 transition">
 
       <FaCloudUploadAlt
@@ -86,7 +121,10 @@ function UploadZone({ setResult }) {
           onChange={(e) => setSelectedJob(e.target.value)}
           className="w-full p-3 rounded-xl bg-slate-800 mb-5"
         >
-          <option value="">Select Job</option>
+
+          <option value="">
+            Select Job
+          </option>
 
           {jobs.map((job) => (
             <option
@@ -117,9 +155,7 @@ function UploadZone({ setResult }) {
           type="file"
           accept=".pdf,.docx"
           className="hidden"
-          onChange={(e) =>
-            setSelectedFile(e.target.files[0])
-          }
+          onChange={(e) => setSelectedFile(e.target.files[0])}
         />
 
         <button
@@ -135,7 +171,9 @@ function UploadZone({ setResult }) {
       </div>
 
     </div>
+
   );
+
 }
 
 export default UploadZone;

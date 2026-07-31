@@ -1,7 +1,49 @@
+import { useEffect, useState } from "react";
+import api from "../services/api";
 import NotificationBell from "./NotificationBell";
 
 function Navbar() {
+
+  const [profile, setProfile] = useState({
+    name: "",
+    profile_image: "",
+  });
+
+  useEffect(() => {
+
+    loadProfile();
+
+    window.addEventListener("profileUpdated", loadProfile);
+
+    return () => {
+
+      window.removeEventListener(
+        "profileUpdated",
+        loadProfile
+      );
+
+    };
+
+  }, []);
+
+  async function loadProfile() {
+
+    try {
+
+      const res = await api.get("/settings/profile");
+
+      setProfile(res.data);
+
+    } catch (err) {
+
+      console.log(err);
+
+    }
+
+  }
+
   return (
+
     <div className="flex justify-between items-center mb-8">
 
       <div>
@@ -11,7 +53,7 @@ function Navbar() {
         </h2>
 
         <p className="text-gray-400 mt-2">
-          AI Recruitment Dashboard
+          {profile.name}
         </p>
 
       </div>
@@ -21,15 +63,20 @@ function Navbar() {
         <NotificationBell />
 
         <img
-          src="https://i.pravatar.cc/100"
+          src={
+            profile.profile_image ||
+            "https://i.pravatar.cc/150"
+          }
           alt="Profile"
-          className="w-12 h-12 rounded-full"
+          className="w-12 h-12 rounded-full object-cover border-2 border-blue-500"
         />
 
       </div>
 
     </div>
+
   );
+
 }
 
 export default Navbar;

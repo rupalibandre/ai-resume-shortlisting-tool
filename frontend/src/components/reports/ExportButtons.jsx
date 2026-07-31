@@ -4,7 +4,19 @@ function ExportButtons() {
 
   async function exportPDF() {
 
-    window.print();
+    try {
+
+      window.print();
+
+      alert("PDF Ready ✅");
+
+    } catch (err) {
+
+      console.log(err);
+
+      alert("PDF Export Failed");
+
+    }
 
   }
 
@@ -19,32 +31,35 @@ function ExportButtons() {
         }
       );
 
-      const url = window.URL.createObjectURL(
-        new Blob([response.data])
-      );
+      const blob = new Blob([
+        response.data
+      ]);
+
+      const url = window.URL.createObjectURL(blob);
 
       const link = document.createElement("a");
 
       link.href = url;
 
-      link.setAttribute(
-        "download",
-        "Candidates_Report.xlsx"
-      );
+      link.download = `Candidates_Report_${new Date()
+        .toISOString()
+        .slice(0,10)}.xlsx`;
 
       document.body.appendChild(link);
 
       link.click();
 
-      link.remove();
+      document.body.removeChild(link);
 
       window.URL.revokeObjectURL(url);
+
+      alert("Excel Report Downloaded Successfully ✅");
 
     } catch (err) {
 
       console.log(err);
 
-      alert("Excel Export Failed");
+      alert("Excel Export Failed ❌");
 
     }
 

@@ -4,19 +4,20 @@ import {
   FaCheck,
   FaTimes,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 function CandidateCard({
   candidate,
-  onView,
   onDelete,
   onStatusChange,
 }) {
-  function badgeColor(status) {
-    if (status === "Shortlisted")
-      return "bg-green-600";
 
-    if (status === "Rejected")
-      return "bg-red-600";
+  const navigate = useNavigate();
+
+  function badgeColor(status) {
+    if (status === "Shortlisted") return "bg-green-600";
+    if (status === "Rejected") return "bg-red-600";
+    if (status === "Interview Scheduled") return "bg-blue-600";
 
     return "bg-yellow-500";
   }
@@ -61,9 +62,7 @@ function CandidateCard({
       <div className="mt-5 flex justify-between items-center">
 
         <span
-          className={`${badgeColor(
-            candidate.status
-          )} px-4 py-2 rounded-full`}
+          className={`${badgeColor(candidate.status)} px-4 py-2 rounded-full`}
         >
           {candidate.status}
         </span>
@@ -89,7 +88,7 @@ function CandidateCard({
         </button>
 
         <button
-          onClick={() => onView(candidate)}
+          onClick={() => navigate(`/candidate/${candidate.id}`)}
           className="bg-blue-600 hover:bg-blue-700 p-3 rounded-xl flex justify-center items-center gap-2"
         >
           <FaEye />

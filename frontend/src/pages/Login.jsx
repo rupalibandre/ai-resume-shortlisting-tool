@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 
 function Login() {
@@ -7,9 +7,8 @@ function Login() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
-  const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
 
   async function handleLogin(e) {
 
@@ -17,11 +16,12 @@ function Login() {
 
     try {
 
-      setLoading(true);
-
       const response = await api.post("/auth/login", {
+
         email,
+
         password,
+
       });
 
       localStorage.setItem(
@@ -29,69 +29,108 @@ function Login() {
         response.data.access_token
       );
 
-      alert("Login Successful ✅");
+      localStorage.setItem(
+        "user",
+        JSON.stringify(response.data.user)
+      );
 
       navigate("/dashboard");
 
     } catch (error) {
 
-      console.error(error);
-
-      alert("Invalid Email or Password ❌");
-
-    } finally {
-
-      setLoading(false);
+      alert(
+        error.response?.data?.detail ||
+        "Login Failed"
+      );
 
     }
 
   }
 
   return (
+
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-purple-900 flex justify-center items-center">
 
       <form
+
         onSubmit={handleLogin}
+
         className="w-[420px] rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 p-10 shadow-2xl"
+
       >
 
         <h1 className="text-4xl font-bold text-center">
+
           Welcome HR
+
         </h1>
 
         <p className="text-center text-gray-300 mt-3">
+
           AI Resume Shortlisting Tool
+
         </p>
 
         <input
+
           type="email"
+
           placeholder="Email"
+
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+
+          onChange={(e)=>setEmail(e.target.value)}
+
           className="w-full mt-8 p-4 rounded-xl bg-white/10 outline-none border border-white/20"
-          required
+
         />
 
         <input
+
           type="password"
+
           placeholder="Password"
+
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+
+          onChange={(e)=>setPassword(e.target.value)}
+
           className="w-full mt-5 p-4 rounded-xl bg-white/10 outline-none border border-white/20"
-          required
+
         />
 
+        <div className="flex justify-end mt-3">
+
+          <Link
+
+            to="/forgot-password"
+
+            className="text-blue-400 hover:text-blue-300 text-sm"
+
+          >
+
+            Forgot Password?
+
+          </Link>
+
+        </div>
+
         <button
-          disabled={loading}
+
           className="w-full mt-8 p-4 rounded-xl bg-blue-600 hover:bg-blue-700 transition-all"
+
         >
-          {loading ? "Logging In..." : "Login"}
+
+          Login
+
         </button>
 
       </form>
 
     </div>
+
   );
+
 }
 
 export default Login;
