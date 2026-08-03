@@ -20,32 +20,8 @@ def get_notifications(db: Session = Depends(get_db)):
     )
 
 
-@router.post("/sample")
-def create_sample(db: Session = Depends(get_db)):
-
-    data = [
-        Notification(
-            title="Resume Uploaded",
-            message="New resume uploaded successfully."
-        ),
-        Notification(
-            title="Candidate Shortlisted",
-            message="AI shortlisted one candidate."
-        ),
-        Notification(
-            title="Interview Scheduled",
-            message="Interview has been scheduled."
-        ),
-    ]
-
-    db.add_all(data)
-    db.commit()
-
-    return {"message": "Sample Notifications Added"}
-
-
 @router.put("/{notification_id}")
-def mark_as_read(
+def mark_read(
     notification_id: int,
     db: Session = Depends(get_db),
 ):
@@ -62,4 +38,37 @@ def mark_as_read(
 
         db.commit()
 
-    return {"message": "Updated"}
+    return {"message": "Notification Read"}
+
+
+@router.put("/read-all")
+def read_all(db: Session = Depends(get_db)):
+
+    notifications = db.query(Notification).all()
+
+    for n in notifications:
+        n.is_read = True
+
+    db.commit()
+
+    return {"message": "All Notifications Read"}
+@router.delete("/{notification_id}")
+def delete_notification(
+    notification_id: int,
+    db: Session = Depends(get_db),
+):
+
+    notification = (
+        db.query(Notification)
+        .filter(Notification.id == notification_id)
+        .first()
+    )
+
+    if notification:
+
+        db.delete(notification)
+        db.commit()
+
+    return {
+        "message": "Deleted Successfully"
+    }

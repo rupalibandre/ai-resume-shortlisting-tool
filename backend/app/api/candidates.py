@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, desc, asc
 
 from app.database.connection import get_db
 from app.models.candidate import Candidate
@@ -10,17 +11,92 @@ router = APIRouter(
 )
 
 
+# ==========================================================
+# GET ALL CANDIDATES
+# Search + Filter + Pagination + Sorting
+# ==========================================================
+
 @router.get("/")
-def get_candidates(db: Session = Depends(get_db)):
+def get_candidates(
+    search: str = "",
+    status: str = "",
+    page: int = 1,
+    limit: int = 10,
+    sort: str = "match",
+    db: Session = Depends(get_db),
+):
+
+    query = db.query(Candidate)
+
+    if search:
+
+        query = query.filter(
+
+            or_(
+
+                Candidate.name.ilike(f"%{search}%"),
+                Candidate.email.ilike(f"%{search}%"),
+                Candidate.job_title.ilike(f"%{search}%"),
+                Candidate.company.ilike(f"%{search}%"),
+
+            )
+
+        )
+
+    if status:
+
+        query = query.filter(
+            Candidate.status == status
+        )
+
+    if sort == "match":
+
+        query = query.order_by(
+            desc(Candidate.match_percentage)
+        )
+
+    elif sort == "latest":
+
+        query = query.order_by(
+            desc(Candidate.id)
+        )
+
+    elif sort == "name":
+
+        query = query.order_by(
+            asc(Candidate.name)
+        )
+
+    total = query.count()
 
     candidates = (
-        db.query(Candidate)
-        .order_by(Candidate.match_percentage.desc())
+
+        query
+
+        .offset((page - 1) * limit)
+
+        .limit(limit)
+
         .all()
+
     )
 
-    return candidates
+    return {
 
+        "total": total,
+
+        "page": page,
+
+        "limit": limit,
+
+        "data": candidates,
+
+    }
+
+
+# ==========================================================
+# GET SINGLE CANDIDATE
+# ==========================================================
 
 @router.get("/{candidate_id}")
 def get_candidate(
@@ -41,11 +117,14 @@ def get_candidate(
         )
 
     return {
+
         "id": candidate.id,
         "name": candidate.name,
         "email": candidate.email,
         "phone": candidate.phone,
+
         "filename": candidate.filename,
+
         "job_title": candidate.job_title,
         "company": candidate.company,
         "experience": candidate.experience,
@@ -70,8 +149,13 @@ def get_candidate(
         "interview_notes": candidate.interview_notes,
 
         "notes": candidate.notes,
+
     }
 
+
+# ==========================================================
+# UPDATE STATUS
+# ==========================================================
 
 @router.put("/{candidate_id}/status")
 def update_candidate_status(
@@ -98,10 +182,16 @@ def update_candidate_status(
     db.refresh(candidate)
 
     return {
+
         "message": "Status Updated Successfully",
         "status": candidate.status,
+
     }
 
+
+# ==========================================================
+# UPDATE NOTES
+# ==========================================================
 
 @router.put("/notes/{candidate_id}")
 def update_notes(
@@ -128,10 +218,16 @@ def update_notes(
     db.refresh(candidate)
 
     return {
+
         "message": "Notes Updated",
         "notes": candidate.notes,
+
     }
 
+
+# ==========================================================
+# DELETE CANDIDATE
+# ==========================================================
 
 @router.delete("/{candidate_id}")
 def delete_candidate(
@@ -155,5 +251,50 @@ def delete_candidate(
     db.commit()
 
     return {
+
         "message": "Candidate Deleted Successfully"
+
+    }
+
+
+# ==========================================================
+# DASHBOARD STATS
+# ==========================================================
+
+@router.get("/stats/overview")
+def candidate_stats(
+    db: Session = Depends(get_db),
+):
+
+    total = db.query(Candidate).count()
+
+    shortlisted = db.query(Candidate).filter(
+        Candidate.status == "Shortlisted"
+    ).count()
+
+    interview = db.query(Candidate).filter(
+        Candidate.status == "Interview Scheduled"
+    ).count()
+
+    selected = db.query(Candidate).filter(
+        Candidate.status == "Selected"
+    ).count()
+
+    rejected = db.query(Candidate).filter(
+        Candidate.status == "Rejected"
+    ).count()
+
+    pending = db.query(Candidate).filter(
+        Candidate.status == "Pending"
+    ).count()
+
+    return {
+
+        "total": total,
+        "shortlisted": shortlisted,
+        "interview": interview,
+        "selected": selected,
+        "rejected": rejected,
+        "pending": pending,
+
     }

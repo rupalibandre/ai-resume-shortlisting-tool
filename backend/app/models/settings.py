@@ -1,24 +1,113 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy import Text
+from sqlalchemy import DateTime
+
+from datetime import datetime
 
 from app.database.connection import Base
 
 
 class Settings(Base):
+
     __tablename__ = "settings"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
 
-    recruiter_name = Column(String, default="Rupali Bandre")
-    recruiter_email = Column(String, default="hr@company.com")
-    recruiter_designation = Column(String, default="HR Manager")
+    # ===================================
+    # Recruiter
+    # ===================================
 
-    company_name = Column(String, default="AI Recruit Pvt Ltd")
-    company_website = Column(String, default="www.airecruit.com")
-    company_location = Column(String, default="Pune")
+    recruiter_name = Column(
+        String(255),
+        default="Rupali Bandre",
+        nullable=False,
+    )
 
-    password = Column(String, default="admin123")
+    recruiter_email = Column(
+        String(255),
+        default="hr@company.com",
+        nullable=False,
+    )
+
+    recruiter_phone = Column(
+        String(20),
+        default="",
+        nullable=True,
+    )
+
+    recruiter_designation = Column(
+        String(255),
+        default="HR Manager",
+        nullable=False,
+    )
 
     profile_image = Column(
-        String,
-        default="https://i.pravatar.cc/150"
+        Text,
+        default="https://i.pravatar.cc/300",
+        nullable=True,
     )
+
+    # ===================================
+    # Company
+    # ===================================
+
+    company_name = Column(
+        String(255),
+        default="AI Recruit Pvt Ltd",
+        nullable=False,
+    )
+
+    company_logo = Column(
+        Text,
+        default="",
+        nullable=True,
+    )
+
+    company_website = Column(
+        String(255),
+        default="https://www.airecruit.com",
+        nullable=True,
+    )
+
+    company_location = Column(
+        String(255),
+        default="Pune",
+        nullable=True,
+    )
+
+    company_description = Column(
+        Text,
+        default="",
+        nullable=True,
+    )
+
+    # ===================================
+    # Security
+    # ===================================
+
+    password = Column(
+    String(255),
+    default="admin123",
+    nullable=False,
+)
+    # ===================================
+    # System
+    # ===================================
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+    )
+
+    updated_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+    )
+    

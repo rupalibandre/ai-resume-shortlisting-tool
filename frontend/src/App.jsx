@@ -12,6 +12,7 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 
+
 import MainLayout from "./layouts/MainLayout";
 
 function App() {
@@ -68,7 +69,8 @@ function App() {
             path="/settings"
             element={<Settings />}
           />
-
+          
+          
           <Route
             path="/notifications"
             element={<Notifications />}

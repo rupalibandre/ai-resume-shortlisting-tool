@@ -1,186 +1,539 @@
 import { useEffect, useState } from "react";
+import {
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaBriefcase,
+  FaCamera,
+  FaSave,
+} from "react-icons/fa";
+
 import api from "../../services/api";
+
 
 function ProfileSettings() {
 
   const [profile, setProfile] = useState({
     name: "",
     email: "",
+    phone: "",
     designation: "",
     profile_image: "",
   });
 
+
   const [image, setImage] = useState(null);
 
+  const [preview, setPreview] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
+
   useEffect(() => {
-    loadProfile();
+
+    fetchProfile();
+
   }, []);
 
-  async function loadProfile() {
 
-    try {
 
-      const res = await api.get("/settings/profile");
+  async function fetchProfile(){
 
-      setProfile(res.data);
+    try{
 
-    } catch (err) {
+      const response = await api.get(
+        "/settings/profile"
+      );
 
-      console.log(err);
+      setProfile(response.data);
+
+      setPreview(
+        response.data.profile_image
+      );
+
+
+    }catch(error){
+
+      console.log(error);
 
     }
 
   }
 
-  function handleChange(e) {
+
+
+  function handleChange(e){
 
     setProfile({
+
       ...profile,
+
       [e.target.name]: e.target.value,
+
     });
 
   }
 
-  async function saveProfile() {
 
-    try {
 
-      await api.put("/settings/profile", {
+  function handleImage(e){
 
-        recruiter_name: profile.name,
-        recruiter_email: profile.email,
-        recruiter_designation: profile.designation,
+    const file = e.target.files[0];
 
-      });
 
-      if (image) {
+    if(file){
 
-        const formData = new FormData();
+      setImage(file);
 
-        formData.append("image", image);
-
-        const upload = await api.post(
-          "/settings/profile/upload",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-
-        profile.profile_image = upload.data.profile_image;
-
-      }
-
-      await loadProfile();
-
-      window.dispatchEvent(new Event("profileUpdated"));
-
-      alert("Profile Updated Successfully ✅");
-
-    } catch (err) {
-
-      console.log(err);
-
-      alert("Unable to update profile");
+      setPreview(
+        URL.createObjectURL(file)
+      );
 
     }
 
   }
 
+
+
+  async function uploadImage(){
+
+
+    if(!image){
+
+      return profile.profile_image;
+
+    }
+
+
+    const formData = new FormData();
+
+
+    formData.append(
+      "image",
+      image
+    );
+
+
+    const response = await api.post(
+
+      "/settings/profile/upload",
+
+      formData,
+
+      {
+
+        headers:{
+          "Content-Type":
+          "multipart/form-data",
+        },
+
+      }
+
+    );
+
+
+    return response.data.profile_image;
+
+
+  }
+
+
+
+  async function saveProfile(){
+
+
+    try{
+
+
+      setLoading(true);
+
+
+
+      let imageURL =
+      profile.profile_image;
+
+
+
+      if(image){
+
+        imageURL =
+        await uploadImage();
+
+      }
+
+
+
+      await api.put(
+
+        "/settings/profile",
+
+        {
+
+          recruiter_name:
+          profile.name,
+
+
+          recruiter_email:
+          profile.email,
+
+
+          recruiter_phone:
+          profile.phone,
+
+
+          recruiter_designation:
+          profile.designation,
+
+        }
+
+      );
+
+
+
+      await fetchProfile();
+
+
+
+      window.dispatchEvent(
+        new Event("profileUpdated")
+      );
+
+
+      alert(
+        "Profile Updated Successfully ✅"
+      );
+
+
+
+    }catch(error){
+
+
+      console.log(error);
+
+
+      alert(
+        "Profile Update Failed ❌"
+      );
+
+
+    }finally{
+
+      setLoading(false);
+
+    }
+
+  }
+
+
+
   return (
 
-    <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+    <div className="
+      bg-white/10
+      backdrop-blur-xl
+      border border-white/10
+      rounded-3xl
+      p-8
+      shadow-xl
+    ">
 
-      <h2 className="text-2xl font-bold mb-6">
-        Recruiter Profile
-      </h2>
 
-      <div className="flex justify-center mb-6">
+      <div className="flex items-center gap-4 mb-8">
 
-        <img
+        <div className="
+          bg-blue-600
+          p-4
+          rounded-2xl
+          text-2xl
+        ">
 
-          src={
+          <FaUser />
 
-            image
-              ? URL.createObjectURL(image)
-              : profile.profile_image ||
-                "https://i.pravatar.cc/150"
+        </div>
 
-          }
 
-          className="w-28 h-28 rounded-full object-cover border-4 border-blue-500"
+        <div>
 
-        />
+          <h2 className="
+            text-3xl
+            font-bold
+          ">
+
+            Recruiter Profile
+
+          </h2>
+
+
+          <p className="
+            text-gray-400
+          ">
+
+            Update your personal information
+
+          </p>
+
+
+        </div>
+
 
       </div>
 
-      <input
 
-        type="file"
 
-        accept="image/*"
+      <div className="
+        flex
+        flex-col
+        items-center
+        mb-10
+      ">
 
-        onChange={(e) => setImage(e.target.files[0])}
 
-        className="mb-6"
+        <div className="
+          relative
+        ">
 
-      />
 
-      <div className="space-y-5">
+          <img
 
-        <input
+            src={
+              preview ||
+              "https://i.pravatar.cc/300"
+            }
 
-          type="text"
+            className="
+              w-36
+              h-36
+              rounded-full
+              object-cover
+              border-4
+              border-blue-500
+              shadow-xl
+            "
 
-          name="name"
+          />
 
-          value={profile.name}
 
-          onChange={handleChange}
+          <label className="
+            absolute
+            bottom-1
+            right-1
+            bg-blue-600
+            p-3
+            rounded-full
+            cursor-pointer
+            hover:bg-blue-700
+          ">
 
-          className="w-full bg-slate-900 rounded-xl p-4"
 
-        />
+            <FaCamera />
 
-        <input
 
-          type="email"
+            <input
 
-          name="email"
+              type="file"
 
-          value={profile.email}
+              accept="image/*"
 
-          onChange={handleChange}
+              hidden
 
-          className="w-full bg-slate-900 rounded-xl p-4"
+              onChange={handleImage}
 
-        />
+            />
 
-        <input
 
-          type="text"
+          </label>
 
-          name="designation"
 
-          value={profile.designation}
+        </div>
 
-          onChange={handleChange}
 
-          className="w-full bg-slate-900 rounded-xl p-4"
 
-        />
+        <p className="
+          text-gray-400
+          mt-4
+        ">
+
+          Click camera to change photo
+
+        </p>
+
+
+
+      </div>      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div>
+
+          <label className="text-gray-300 mb-2 block">
+            Full Name
+          </label>
+
+          <div className="relative">
+
+            <FaUser className="absolute left-4 top-4 text-gray-400" />
+
+            <input
+              type="text"
+              name="name"
+              value={profile.name}
+              onChange={handleChange}
+              placeholder="Recruiter Name"
+              className="
+                w-full
+                pl-12
+                pr-4
+                py-4
+                rounded-xl
+                bg-slate-900
+                border
+                border-white/10
+                outline-none
+                focus:border-blue-500
+              "
+            />
+
+          </div>
+
+        </div>
+
+        <div>
+
+          <label className="text-gray-300 mb-2 block">
+            Email Address
+          </label>
+
+          <div className="relative">
+
+            <FaEnvelope className="absolute left-4 top-4 text-gray-400" />
+
+            <input
+              type="email"
+              name="email"
+              value={profile.email}
+              onChange={handleChange}
+              placeholder="Email"
+              className="
+                w-full
+                pl-12
+                pr-4
+                py-4
+                rounded-xl
+                bg-slate-900
+                border
+                border-white/10
+                outline-none
+                focus:border-blue-500
+              "
+            />
+
+          </div>
+
+        </div>
+
+        <div>
+
+          <label className="text-gray-300 mb-2 block">
+            Phone Number
+          </label>
+
+          <div className="relative">
+
+            <FaPhone className="absolute left-4 top-4 text-gray-400" />
+
+            <input
+              type="text"
+              name="phone"
+              value={profile.phone}
+              onChange={handleChange}
+              placeholder="+91 XXXXX XXXXX"
+              className="
+                w-full
+                pl-12
+                pr-4
+                py-4
+                rounded-xl
+                bg-slate-900
+                border
+                border-white/10
+                outline-none
+                focus:border-blue-500
+              "
+            />
+
+          </div>
+
+        </div>
+
+        <div>
+
+          <label className="text-gray-300 mb-2 block">
+            Designation
+          </label>
+
+          <div className="relative">
+
+            <FaBriefcase className="absolute left-4 top-4 text-gray-400" />
+
+            <input
+              type="text"
+              name="designation"
+              value={profile.designation}
+              onChange={handleChange}
+              placeholder="Designation"
+              className="
+                w-full
+                pl-12
+                pr-4
+                py-4
+                rounded-xl
+                bg-slate-900
+                border
+                border-white/10
+                outline-none
+                focus:border-blue-500
+              "
+            />
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div className="flex justify-end mt-10">
 
         <button
-
           onClick={saveProfile}
-
-          className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl"
-
+          disabled={loading}
+          className="
+            flex
+            items-center
+            gap-3
+            bg-blue-600
+            hover:bg-blue-700
+            px-8
+            py-4
+            rounded-xl
+            font-semibold
+            transition-all
+            disabled:opacity-60
+          "
         >
 
-          Save Profile
+          <FaSave />
+
+          {
+
+            loading
+
+            ?
+
+            "Saving..."
+
+            :
+
+            "Save Profile"
+
+          }
 
         </button>
 

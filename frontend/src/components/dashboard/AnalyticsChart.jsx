@@ -2,40 +2,32 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  CartesianGrid,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
 } from "recharts";
 
-function AnalyticsChart({ average, chartData = [] }) {
-
+function AnalyticsChart({ data }) {
   return (
+    <div className="bg-slate-800 rounded-2xl p-6 shadow-lg h-[420px]">
 
-    <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-
-      <h2 className="text-2xl font-bold mb-2">
-        AI Recruitment Analytics
+      <h2 className="text-3xl font-bold text-white mb-2">
+        AI Resume Match Analytics
       </h2>
 
-      <p className="text-gray-400 mb-6">
-        Average Resume Match :
-        <span className="text-green-400 font-bold ml-2">
-          {average}%
-        </span>
+      <p className="text-slate-400 mb-8">
+        Candidate Match Percentage Distribution
       </p>
 
-      <ResponsiveContainer
-        width="100%"
-        height={350}
-      >
+      <ResponsiveContainer width="100%" height="80%">
 
-        <AreaChart data={chartData}>
+        <AreaChart data={data}>
 
           <defs>
 
             <linearGradient
-              id="colorMatch"
+              id="matchGradient"
               x1="0"
               y1="0"
               x2="0"
@@ -43,14 +35,14 @@ function AnalyticsChart({ average, chartData = [] }) {
             >
 
               <stop
-                offset="5%"
-                stopColor="#2563eb"
+                offset="0%"
+                stopColor="#3b82f6"
                 stopOpacity={0.9}
               />
 
               <stop
-                offset="95%"
-                stopColor="#2563eb"
+                offset="100%"
+                stopColor="#3b82f6"
                 stopOpacity={0}
               />
 
@@ -58,22 +50,35 @@ function AnalyticsChart({ average, chartData = [] }) {
 
           </defs>
 
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid
+            stroke="#334155"
+            strokeDasharray="4 4"
+          />
 
           <XAxis
             dataKey="label"
+            stroke="#94a3b8"
           />
 
-          <YAxis />
+          <YAxis
+            stroke="#94a3b8"
+          />
 
-          <Tooltip />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: "#1e293b",
+              border: "1px solid #334155",
+              borderRadius: "12px",
+              color: "#fff",
+            }}
+          />
 
           <Area
             type="monotone"
             dataKey="count"
             stroke="#3b82f6"
-            fill="url(#colorMatch)"
-            strokeWidth={3}
+            strokeWidth={4}
+            fill="url(#matchGradient)"
           />
 
         </AreaChart>
@@ -81,9 +86,7 @@ function AnalyticsChart({ average, chartData = [] }) {
       </ResponsiveContainer>
 
     </div>
-
   );
-
 }
 
 export default AnalyticsChart;

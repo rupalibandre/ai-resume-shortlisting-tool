@@ -16,6 +16,7 @@ from app.api.password import router as password_router
 from app.api import viewer
 from app.api.settings import router as settings_router
 from app.api.notifications import router as notifications_router
+from app.api.activity import router as activity_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -50,6 +51,7 @@ app.include_router(password_router)
 app.include_router(viewer.router)
 app.include_router(settings_router)
 app.include_router(notifications_router)
+app.include_router(activity_router)
 
 
 @app.get("/")

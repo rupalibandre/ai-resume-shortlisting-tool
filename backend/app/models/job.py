@@ -10,6 +10,7 @@ from app.database.connection import Base
 
 
 class Job(Base):
+
     __tablename__ = "jobs"
 
     id = Column(
@@ -17,6 +18,10 @@ class Job(Base):
         primary_key=True,
         index=True,
     )
+
+    # ==========================
+    # Basic Details
+    # ==========================
 
     title = Column(
         String(255),
@@ -26,6 +31,11 @@ class Job(Base):
     company = Column(
         String(255),
         nullable=False,
+    )
+
+    department = Column(
+        String(255),
+        default="General",
     )
 
     location = Column(
@@ -71,4 +81,66 @@ class Job(Base):
     status = Column(
         String(50),
         default="Open",
+    )
+
+    # ==========================
+    # Analytics
+    # ==========================
+
+    applicants = Column(
+        Integer,
+        default=0,
+    )
+
+    shortlisted = Column(
+        Integer,
+        default=0,
+    )
+
+    interviewed = Column(
+        Integer,
+        default=0,
+    )
+
+    selected = Column(
+        Integer,
+        default=0,
+    )
+
+    rejected = Column(
+        Integer,
+        default=0,
+    )
+
+    # ==========================
+    # AI
+    # ==========================
+
+    ai_description = Column(
+        Text,
+        nullable=True,
+    )
+
+    ai_skills = Column(
+        Text,
+        nullable=True,
+    )
+
+    # ==========================
+    # Recruiter
+    # ==========================
+
+    recruiter = Column(
+        String(255),
+        default="HR Manager",
+    )
+
+    priority = Column(
+        String(50),
+        default="Medium",
+    )
+
+    hiring_stage = Column(
+        String(100),
+        default="Screening",
     )

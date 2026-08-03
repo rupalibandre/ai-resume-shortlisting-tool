@@ -5,63 +5,152 @@ import {
   FaBriefcase,
 } from "react-icons/fa";
 
+const statsConfig = [
+
+  {
+    title: "Total Candidates",
+    key: "total_candidates",
+    icon: FaUsers,
+    color: "from-blue-500 to-cyan-500",
+    glow: "shadow-blue-500/30",
+  },
+
+  {
+    title: "Shortlisted",
+    key: "shortlisted",
+    icon: FaUserCheck,
+    color: "from-green-500 to-emerald-500",
+    glow: "shadow-green-500/30",
+  },
+
+  {
+    title: "Rejected",
+    key: "rejected",
+    icon: FaUserTimes,
+    color: "from-red-500 to-rose-500",
+    glow: "shadow-red-500/30",
+  },
+
+  {
+    title: "Open Jobs",
+    key: "total_jobs",
+    icon: FaBriefcase,
+    color: "from-violet-500 to-indigo-500",
+    glow: "shadow-violet-500/30",
+  },
+
+];
+
 function ReportStats({ report }) {
 
-  const stats = [
-    {
-      title: "Total Candidates",
-      value: report.total_candidates,
-      icon: <FaUsers />,
-      color: "text-blue-400",
-    },
-    {
-      title: "Shortlisted",
-      value: report.shortlisted,
-      icon: <FaUserCheck />,
-      color: "text-green-400",
-    },
-    {
-      title: "Rejected",
-      value: report.rejected,
-      icon: <FaUserTimes />,
-      color: "text-red-400",
-    },
-    {
-      title: "Open Jobs",
-      value: report.total_jobs,
-      icon: <FaBriefcase />,
-      color: "text-purple-400",
-    },
-  ];
-
   return (
+
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 
-      {stats.map((item) => (
+      {statsConfig.map((item) => {
 
-        <div
-          key={item.title}
-          className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6"
-        >
+        const Icon = item.icon;
 
-          <div className={`text-4xl ${item.color}`}>
-            {item.icon}
+        return (
+
+          <div
+            key={item.title}
+            className={`
+              relative
+              overflow-hidden
+              rounded-3xl
+              border
+              border-white/10
+              bg-white/5
+              backdrop-blur-xl
+              p-6
+              transition-all
+              duration-500
+              hover:-translate-y-2
+              hover:shadow-2xl
+              ${item.glow}
+              group
+            `}
+          >
+
+            {/* Background Glow */}
+
+            <div
+              className={`
+                absolute
+                -top-14
+                -right-12
+                h-36
+                w-36
+                rounded-full
+                bg-gradient-to-br
+                ${item.color}
+                blur-3xl
+                opacity-25
+                group-hover:scale-125
+                transition-all
+                duration-700
+              `}
+            />
+
+            {/* Icon */}
+
+            <div
+              className={`
+                relative
+                w-16
+                h-16
+                rounded-2xl
+                flex
+                items-center
+                justify-center
+                bg-gradient-to-br
+                ${item.color}
+                text-white
+                shadow-lg
+              `}
+            >
+
+              <Icon size={28} />
+
+            </div>
+
+            {/* Text */}
+
+            <p className="relative mt-6 text-gray-400 text-sm">
+
+              {item.title}
+
+            </p>
+
+            <h2 className="relative text-4xl font-bold mt-2 text-white">
+
+              {report[item.key]}
+
+            </h2>
+
+            {/* Bottom Line */}
+
+            <div
+              className={`
+                mt-5
+                h-1
+                rounded-full
+                bg-gradient-to-r
+                ${item.color}
+              `}
+            />
+
           </div>
 
-          <h3 className="text-gray-400 mt-4">
-            {item.title}
-          </h3>
+        );
 
-          <h1 className="text-4xl font-bold mt-2">
-            {item.value}
-          </h1>
-
-        </div>
-
-      ))}
+      })}
 
     </div>
+
   );
+
 }
 
 export default ReportStats;

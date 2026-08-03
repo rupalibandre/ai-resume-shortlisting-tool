@@ -1,39 +1,29 @@
 import api from "../../services/api";
 
+import {
+  FaFileExcel,
+  FaFilePdf,
+} from "react-icons/fa";
+
 function ExportButtons() {
 
-  async function exportPDF() {
+  async function exportExcel(){
 
-    try {
-
-      window.print();
-
-      alert("PDF Ready ✅");
-
-    } catch (err) {
-
-      console.log(err);
-
-      alert("PDF Export Failed");
-
-    }
-
-  }
-
-  async function exportExcel() {
-
-    try {
+    try{
 
       const response = await api.get(
+
         "/reports/excel",
+
         {
-          responseType: "blob",
+
+          responseType:"blob",
+
         }
+
       );
 
-      const blob = new Blob([
-        response.data
-      ]);
+      const blob = new Blob([response.data]);
 
       const url = window.URL.createObjectURL(blob);
 
@@ -41,9 +31,7 @@ function ExportButtons() {
 
       link.href = url;
 
-      link.download = `Candidates_Report_${new Date()
-        .toISOString()
-        .slice(0,10)}.xlsx`;
+      link.download = "Recruitment_Report.xlsx";
 
       document.body.appendChild(link);
 
@@ -53,15 +41,21 @@ function ExportButtons() {
 
       window.URL.revokeObjectURL(url);
 
-      alert("Excel Report Downloaded Successfully ✅");
+    }
 
-    } catch (err) {
+    catch(err){
 
       console.log(err);
 
-      alert("Excel Export Failed ❌");
+      alert("Excel Export Failed");
 
     }
+
+  }
+
+  function exportPDF(){
+
+      window.print();
 
   }
 
@@ -70,17 +64,31 @@ function ExportButtons() {
     <div className="flex gap-4">
 
       <button
+
         onClick={exportPDF}
-        className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-xl"
+
+        className="flex items-center gap-3 bg-red-600 hover:bg-red-700 px-6 py-3 rounded-xl transition"
+
       >
+
+        <FaFilePdf />
+
         Export PDF
+
       </button>
 
       <button
+
         onClick={exportExcel}
-        className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl"
+
+        className="flex items-center gap-3 bg-green-600 hover:bg-green-700 px-6 py-3 rounded-xl transition"
+
       >
+
+        <FaFileExcel />
+
         Export Excel
+
       </button>
 
     </div>

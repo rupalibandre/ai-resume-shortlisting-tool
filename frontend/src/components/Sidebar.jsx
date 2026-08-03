@@ -120,66 +120,108 @@ function Sidebar() {
 
   return (
 
-    <div className="w-72 h-screen bg-white/10 backdrop-blur-xl border-r border-white/10 p-6 fixed">
+    <div className="fixed w-72 h-screen bg-white/10 backdrop-blur-xl border-r border-white/10 flex flex-col">
 
-      <h1 className="text-3xl font-bold">
-        🤖 AI Recruit
-      </h1>
+      {/* Header */}
 
-      <p className="text-gray-400 mt-2">
-        {profile.company}
-      </p>
+      <div className="p-6">
 
-      <div className="bg-white/10 rounded-xl p-4 mt-8 mb-8 text-center">
+        <h1 className="text-3xl font-bold">
 
-        <img
-          src={
-            profile.profile_image ||
-            "https://i.pravatar.cc/150"
-          }
-          className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-2 border-blue-500"
-        />
+          🤖 AI Recruit
 
-        <h3 className="font-bold text-lg">
-          {profile.recruiter}
-        </h3>
+        </h1>
 
-        <p className="text-gray-400">
-          {profile.designation}
+        <p className="text-gray-400 mt-2">
+
+          {profile.company}
+
         </p>
 
       </div>
 
-      <div className="space-y-2">
+      {/* Profile */}
 
-        {menu.map((item) => (
+      <div className="px-6">
 
-          <NavLink
-            key={item.title}
-            to={item.path}
-            className={({ isActive }) =>
-              `flex items-center gap-4 p-4 rounded-xl transition ${
-                isActive
-                  ? "bg-blue-600"
-                  : "hover:bg-white/10"
-              }`
+        <div className="bg-white/10 rounded-xl p-4 text-center">
+
+          <img
+            src={
+              profile.profile_image ||
+              "https://i.pravatar.cc/150"
             }
-          >
-            {item.icon}
-            <span>{item.title}</span>
-          </NavLink>
+            className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-2 border-blue-500"
+          />
 
-        ))}
+          <h3 className="font-bold text-lg">
+
+            {profile.recruiter}
+
+          </h3>
+
+          <p className="text-gray-400">
+
+            {profile.designation}
+
+          </p>
+
+        </div>
 
       </div>
 
-      <button
-        onClick={handleLogout}
-        className="absolute bottom-8 left-6 right-6 bg-red-600 hover:bg-red-700 rounded-xl p-3"
-      >
-        <FaSignOutAlt className="inline mr-2" />
-        Logout
-      </button>
+      {/* Scrollable Menu */}
+
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+
+        <div className="space-y-2">
+
+          {menu.map((item) => (
+
+            <NavLink
+              key={item.title}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-4 p-4 rounded-xl transition-all duration-300 ${
+                  isActive
+                    ? "bg-blue-600 shadow-lg"
+                    : "hover:bg-white/10"
+                }`
+              }
+            >
+
+              {item.icon}
+
+              <span>
+
+                {item.title}
+
+              </span>
+
+            </NavLink>
+
+          ))}
+
+        </div>
+
+      </div>
+
+      {/* Logout */}
+
+      <div className="p-6 border-t border-white/10">
+
+        <button
+          onClick={handleLogout}
+          className="w-full bg-red-600 hover:bg-red-700 rounded-xl p-3 transition"
+        >
+
+          <FaSignOutAlt className="inline mr-2" />
+
+          Logout
+
+        </button>
+
+      </div>
 
     </div>
 

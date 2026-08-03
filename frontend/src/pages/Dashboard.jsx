@@ -1,171 +1,282 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 
+import StatCard from "../components/dashboard/StatCard";
 import AnalyticsChart from "../components/dashboard/AnalyticsChart";
-import TopSkills from "../components/dashboard/TopSkills";
-import RecentCandidates from "../components/dashboard/RecentCandidates";
-import StatCard from "../components/StatCard";
+import RecentActivity from "../components/dashboard/RecentActivity";
+import UpcomingInterviews from "../components/dashboard/UpcomingInterviews";
+import AIInsights from "../components/dashboard/AIInsights";
+import Pipeline from "../components/dashboard/Pipeline";
+import QuickActions from "../components/dashboard/QuickActions";
 
-import {
-  FaBriefcase,
-  FaUsers,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaClock,
-  FaUserTie,
-  FaStar,
-  FaChartLine,
-} from "react-icons/fa";
+import JobAnalytics from "../components/dashboard/JobAnalytics";
+import MonthlyHiringChart from "../components/dashboard/MonthlyHiringChart";
+import TopCandidates from "../components/dashboard/TopCandidates";
 
 function Dashboard() {
 
-  const [stats, setStats] = useState({
-    total_jobs: 0,
-    total_candidates: 0,
-    shortlisted: 0,
-    rejected: 0,
-    pending: 0,
-    interview: 0,
-    selected: 0,
-    average_match: 0,
+  const [dashboard, setDashboard] = useState(null);
 
-    recent_candidates: [],
-    top_candidates: [],
+  const [loading, setLoading] = useState(true);
 
-    chart: [],
-    status_chart: [],
-  });
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
+
     loadDashboard();
+
   }, []);
 
   async function loadDashboard() {
 
     try {
 
-      const response = await api.get("/dashboard/");
+      const res = await api.get("/dashboard/");
 
-      setStats({
-        ...response.data.statistics,
-        recent_candidates: response.data.recent_candidates || [],
-        top_candidates: response.data.top_candidates || [],
-        chart: response.data.chart || [],
-        status_chart: response.data.status_chart || [],
-      });
+      setDashboard(res.data);
 
-    } catch (error) {
+    } catch (err) {
 
-      console.log(error);
+      console.log(err);
+
+    } finally {
+
+      setLoading(false);
+
+      setRefreshing(false);
 
     }
 
   }
 
-  const cards = [
+  async function refreshDashboard() {
 
-    {
-      title: "Total Jobs",
-      value: stats.total_jobs,
-      icon: <FaBriefcase />,
-      color: "text-blue-400",
-    },
+    setRefreshing(true);
 
-    {
-      title: "Candidates",
-      value: stats.total_candidates,
-      icon: <FaUsers />,
-      color: "text-green-400",
-    },
+    await loadDashboard();
 
-    {
-      title: "Shortlisted",
-      value: stats.shortlisted,
-      icon: <FaCheckCircle />,
-      color: "text-purple-400",
-    },
+  }
 
-    {
-      title: "Rejected",
-      value: stats.rejected,
-      icon: <FaTimesCircle />,
-      color: "text-red-400",
-    },
+  if (loading) {
 
-    {
-      title: "Pending",
-      value: stats.pending,
-      icon: <FaClock />,
-      color: "text-yellow-400",
-    },
+    return (
 
-    {
-      title: "Interview",
-      value: stats.interview,
-      icon: <FaUserTie />,
-      color: "text-cyan-400",
-    },
+      <div className="flex justify-center items-center h-[70vh]">
 
-    {
-      title: "Selected",
-      value: stats.selected,
-      icon: <FaStar />,
-      color: "text-emerald-400",
-    },
+        <div className="text-2xl font-semibold">
 
-    {
-      title: "Average Match",
-      value: `${stats.average_match}%`,
-      icon: <FaChartLine />,
-      color: "text-orange-400",
-    },
+          Loading Dashboard...
 
-  ];
+        </div>
+
+      </div>
+
+    );
+
+  }
 
   return (
 
     <div className="space-y-8">
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      {/* Header */}
 
-        {cards.map((card) => (
+      <div className="flex justify-between items-center">
 
-          <StatCard
-            key={card.title}
-            title={card.title}
-            value={card.value}
-            icon={card.icon}
-            color={card.color}
-          />
+        <div>
 
-        ))}
+          <h1 className="text-4xl font-bold">
+
+            AI Recruitment Dashboard
+
+          </h1>
+
+          <p className="text-gray-400 mt-2">
+
+            Monitor hiring activities in real time.
+
+          </p>
+
+        </div>
+
+        <button
+
+          onClick={refreshDashboard}
+
+          className="bg-blue-600 hover:bg-blue-700 px-5 py-3 rounded-xl font-semibold"
+
+        >
+
+          {refreshing ? "Refreshing..." : "Refresh Dashboard"}
+
+        </button>
 
       </div>
 
-      <div className="grid xl:grid-cols-3 gap-8">
+      {/* Statistics */}
+
+      <div className="grid xl:grid-cols-4 lg:grid-cols-2 gap-6">
+
+        <StatCard
+
+          title="Total Jobs"
+
+          value={dashboard.statistics.total_jobs}
+
+          color="blue"
+
+        />
+
+        <StatCard
+
+          title="Candidates"
+
+          value={dashboard.statistics.total_candidates}
+
+          color="purple"
+
+        />
+
+        <StatCard
+
+          title="Shortlisted"
+
+          value={dashboard.statistics.shortlisted}
+
+          color="green"
+
+        />
+
+        <StatCard
+
+          title="Interview"
+
+          value={dashboard.statistics.interview}
+
+          color="yellow"
+
+        />
+
+        <StatCard
+
+          title="Selected"
+
+          value={dashboard.statistics.selected}
+
+          color="emerald"
+
+        />
+
+        <StatCard
+
+          title="Rejected"
+
+          value={dashboard.statistics.rejected}
+
+          color="red"
+
+        />
+
+        <StatCard
+
+          title="Average Match"
+
+          value={`${dashboard.statistics.average_match}%`}
+
+          color="pink"
+
+        />
+
+        <StatCard
+
+          title="Highest Match"
+
+          value={`${dashboard.statistics.highest_match}%`}
+
+          color="indigo"
+
+        />
+
+      </div>
+            {/* Charts */}
+
+      <div className="grid xl:grid-cols-3 gap-6">
 
         <div className="xl:col-span-2">
 
           <AnalyticsChart
-            average={stats.average_match}
-            chartData={stats.chart}
+
+            data={dashboard.chart}
+
           />
 
         </div>
 
-        <TopSkills />
+        <AIInsights
+
+          insights={dashboard.ai_insights}
+
+        />
 
       </div>
 
-      <RecentCandidates
-        candidates={stats.recent_candidates}
+      {/* Monthly Hiring + Pipeline */}
+
+      <div className="grid xl:grid-cols-2 gap-6">
+
+        <MonthlyHiringChart
+
+          data={dashboard.monthly_hiring}
+
+        />
+
+        <Pipeline
+
+          data={dashboard.status_chart}
+
+        />
+
+      </div>
+
+      {/* Job Analytics */}
+
+      <JobAnalytics
+
+        analytics={dashboard.job_analytics}
+
       />
 
-      <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6">
+      {/* Activities */}
+
+      <div className="grid xl:grid-cols-3 gap-6">
+
+        <RecentActivity
+
+          activities={dashboard.activities}
+
+        />
+
+        <UpcomingInterviews
+
+          interviews={dashboard.upcoming_interviews}
+
+        />
+
+        <TopCandidates
+
+          candidates={dashboard.top_candidates}
+
+        />
+
+      </div>
+
+      {/* Recent Candidates */}
+
+      <div className="bg-white/5 rounded-2xl p-6">
 
         <h2 className="text-2xl font-bold mb-6">
 
-          ⭐ Top Candidates
+          Recent Candidates
 
         </h2>
 
@@ -177,15 +288,17 @@ function Dashboard() {
 
               <tr className="text-left border-b border-white/10">
 
-                <th className="pb-3">Candidate</th>
+                <th className="pb-4">Candidate</th>
 
                 <th>Job</th>
 
                 <th>Company</th>
 
-                <th>Score</th>
+                <th>Match</th>
 
                 <th>Status</th>
+
+                <th>Resume</th>
 
               </tr>
 
@@ -193,46 +306,77 @@ function Dashboard() {
 
             <tbody>
 
-              {stats.top_candidates.map((candidate) => (
+              {dashboard.recent_candidates.map(
 
-                <tr
-                  key={candidate.id}
-                  className="border-b border-white/5"
-                >
+                (candidate) => (
 
-                  <td className="py-4">
+                  <tr
 
-                    {candidate.name}
+                    key={candidate.id}
 
-                  </td>
+                    className="border-b border-white/5 hover:bg-white/5"
 
-                  <td>
+                  >
 
-                    {candidate.job}
+                    <td className="py-4">
 
-                  </td>
+                      {candidate.name}
 
-                  <td>
+                    </td>
 
-                    {candidate.company}
+                    <td>
 
-                  </td>
+                      {candidate.job}
 
-                  <td className="text-green-400 font-bold">
+                    </td>
 
-                    {candidate.score}%
+                    <td>
 
-                  </td>
+                      {candidate.company}
 
-                  <td>
+                    </td>
 
-                    {candidate.status}
+                    <td>
 
-                  </td>
+                      <span className="font-semibold text-green-400">
 
-                </tr>
+                        {candidate.score}%
 
-              ))}
+                      </span>
+
+                    </td>
+
+                    <td>
+
+                      {candidate.status}
+
+                    </td>
+
+                    <td>
+
+                      <a
+
+                        href={`http://127.0.0.1:8000/uploads/${candidate.resume}`}
+
+                        target="_blank"
+
+                        rel="noreferrer"
+
+                        className="text-blue-400 hover:underline"
+
+                      >
+
+                        View Resume
+
+                      </a>
+
+                    </td>
+
+                  </tr>
+
+                )
+
+              )}
 
             </tbody>
 
@@ -241,6 +385,9 @@ function Dashboard() {
         </div>
 
       </div>
+            {/* Quick Actions */}
+
+      <QuickActions />
 
     </div>
 
@@ -248,4 +395,4 @@ function Dashboard() {
 
 }
 
-export default Dashboard;
+export default Dashboard;  

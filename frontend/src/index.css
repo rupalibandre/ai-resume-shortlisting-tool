@@ -17,3 +17,12 @@ body{
 #root{
   min-height:100vh;
 }
+@keyframes shine {
+  0% {
+    transform: translateX(-350%) rotate(20deg);
+  }
+
+  100% {
+    transform: translateX(550%) rotate(20deg);
+  }
+}
