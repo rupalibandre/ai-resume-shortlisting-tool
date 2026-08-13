@@ -1,34 +1,42 @@
+import os
 import json
 import re
 
 from groq import Groq
 
-from app.core.config import GROQ_API_KEY
 
-client = Groq(api_key=GROQ_API_KEY)
+# =========================================================
+# GROQ CLIENT
+# =========================================================
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+if not GROQ_API_KEY:
+    raise RuntimeError("GROQ_API_KEY is not configured")
 
 
-def ai_resume_match(
-    resume_text: str,
-    job_description: str,
-):
+client = Groq(
+    api_key=GROQ_API_KEY
+)
+
+
+# =========================================================
+# AI RESUME MATCH
+# =========================================================
+
+def ai_resume_match(resume_text: str, job_description: str):
 
     prompt = f"""
-You are an Expert ATS AI.
+You are an AI Resume Shortlisting and Recruitment Assistant.
 
-Compare the Resume with the Job Description.
+Analyze the candidate resume against the given job description.
 
 Return ONLY valid JSON.
 
-Resume:
-{resume_text}
-
-Job Description:
-{job_description}
-
-JSON Format:
+Required JSON format:
 
 {{
+    "candidate_name": "",
     "match_percentage": 0,
     "summary": "",
     "strengths": [],
@@ -36,65 +44,169 @@ JSON Format:
     "missing_skills": [],
     "interview_questions": []
 }}
+
+Rules:
+
+1. match_percentage must be a number between 0 and 100.
+2. candidate_name should be extracted from the resume if possible.
+3. strengths must be an array of strings.
+4. weaknesses must be an array of strings.
+5. missing_skills must be an array of strings.
+6. interview_questions must contain useful interview questions.
+7. Do not add markdown.
+8. Do not add ```json.
+9. Return JSON only.
+
+JOB DESCRIPTION:
+{job_description}
+
+RESUME:
+{resume_text}
 """
-
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        temperature=0.2,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ],
-    )
-
-    content = response.choices[0].message.content.strip()
-
-    print("\n================ GROQ RESPONSE ================\n")
-    print(content)
-    print("\n===============================================\n")
 
     try:
 
-        start = content.find("{")
-        end = content.rfind("}") + 1
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are an expert ATS resume screening "
+                        "assistant. Always return valid JSON."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            temperature=0.2,
+            max_completion_tokens=2000,
+        )
 
-        if start != -1 and end != -1:
+        content = response.choices[0].message.content
 
-            content = content[start:end]
+        if not content:
+            raise RuntimeError(
+                "Groq returned an empty response"
+            )
 
-        data = json.loads(content)
+        content = content.strip()
 
-        data.setdefault("match_percentage", 0)
-        data.setdefault("summary", "")
-        data.setdefault("strengths", [])
-        data.setdefault("weaknesses", [])
-        data.setdefault("missing_skills", [])
-        data.setdefault("interview_questions", [])
+        # Remove markdown JSON wrapper if model adds it
+        content = re.sub(
+            r"^```json\s*",
+            "",
+            content,
+            flags=re.IGNORECASE,
+        )
 
-        return data
+        content = re.sub(
+            r"\s*```$",
+            "",
+            content,
+        )
 
-    except Exception as e:
+        content = content.strip()
 
-        print("JSON ERROR :", e)
+        # Parse JSON
+        result = json.loads(content)
 
-        percentage = re.findall(r"\d+", content)
+        # -------------------------------------------------
+        # Safe defaults
+        # -------------------------------------------------
 
-        score = 0
+        result.setdefault(
+            "candidate_name",
+            "",
+        )
 
-        if percentage:
+        result.setdefault(
+            "match_percentage",
+            0,
+        )
 
-            try:
-                score = int(percentage[0])
-            except:
-                score = 0
+        result.setdefault(
+            "summary",
+            "",
+        )
+
+        result.setdefault(
+            "strengths",
+            [],
+        )
+
+        result.setdefault(
+            "weaknesses",
+            [],
+        )
+
+        result.setdefault(
+            "missing_skills",
+            [],
+        )
+
+        result.setdefault(
+            "interview_questions",
+            [],
+        )
+
+        # -------------------------------------------------
+        # Validate score
+        # -------------------------------------------------
+
+        try:
+
+            score = float(
+                result["match_percentage"]
+            )
+
+        except:
+
+            score = 0
+
+        score = max(
+            0,
+            min(
+                100,
+                score,
+            ),
+        )
+
+        result["match_percentage"] = score
+
+        return result
+
+    except json.JSONDecodeError as error:
+
+        print(
+            "Groq JSON parsing error:",
+            error,
+        )
+
+        print(
+            "Groq raw response:",
+            content if "content" in locals() else "EMPTY",
+        )
 
         return {
-            "match_percentage": score,
-            "summary": content,
+            "candidate_name": "",
+            "match_percentage": 0,
+            "summary": "AI response could not be parsed.",
             "strengths": [],
             "weaknesses": [],
             "missing_skills": [],
             "interview_questions": [],
         }
+
+    except Exception as error:
+
+        print(
+            "Groq AI Error:",
+            repr(error),
+        )
+
+        raise RuntimeError(
+            f"AI Resume Matching Failed: {str(error)}"
+        )

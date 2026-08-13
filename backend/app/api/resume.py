@@ -23,57 +23,51 @@ from app.services.resume_parser import extract_text
 from app.services.groq_service import ai_resume_match
 from app.services.pdf_converter import convert_docx_to_pdf
 
+
 router = APIRouter(
     prefix="/resume",
     tags=["Resume"],
 )
 
+
 UPLOAD_FOLDER = "uploads"
 Path(UPLOAD_FOLDER).mkdir(exist_ok=True)
 
 
-# --------------------------
-# Helper Functions
-# --------------------------
+# ======================================================
+# HELPERS
+# ======================================================
 
 def extract_email(text: str):
-
     match = re.search(
         r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}",
         text,
     )
-
     return match.group(0) if match else None
 
 
 def extract_phone(text: str):
-
     match = re.search(
         r"(\+91[\-\s]?)?[6-9]\d{9}",
         text,
     )
-
     return match.group(0) if match else None
 
 
 def estimate_experience(text: str):
-
     years = re.findall(
         r"(\d+)\+?\s*years?",
         text.lower(),
     )
 
     if years:
-
-        return max(years) + " Years"
+        return max(years, key=int) + " Years"
 
     return "Fresher"
 
 
 def extract_skills(text):
-
     master_skills = [
-
         "Python",
         "Java",
         "FastAPI",
@@ -95,26 +89,20 @@ def extract_skills(text):
         "Machine Learning",
         "AI",
         "SQL",
-
     ]
 
     found = []
-
     lower = text.lower()
 
     for skill in master_skills:
-
         if skill.lower() in lower:
-
             found.append(skill)
 
     return found
 
 
 def generate_unique_filename(filename):
-
     extension = Path(filename).suffix
-
     unique = uuid.uuid4().hex[:10]
 
     return f"{unique}_{filename.replace(' ', '_')}"
@@ -123,7 +111,6 @@ def generate_unique_filename(filename):
 def duplicate_resume(db, email, phone):
 
     if email:
-
         candidate = (
             db.query(Candidate)
             .filter(Candidate.email == email)
@@ -131,11 +118,9 @@ def duplicate_resume(db, email, phone):
         )
 
         if candidate:
-
             return True
 
     if phone:
-
         candidate = (
             db.query(Candidate)
             .filter(Candidate.phone == phone)
@@ -143,10 +128,16 @@ def duplicate_resume(db, email, phone):
         )
 
         if candidate:
-
             return True
 
-    return False@router.post("/match")
+    return False
+
+
+# ======================================================
+# MATCH RESUME
+# ======================================================
+
+@router.post("/match")
 async def match_resume(
     job_id: int = Form(...),
     file: UploadFile = File(...),
@@ -156,7 +147,6 @@ async def match_resume(
     extension = Path(file.filename).suffix.lower()
 
     if extension not in [".pdf", ".docx"]:
-
         raise HTTPException(
             status_code=400,
             detail="Only PDF and DOCX files are allowed.",
@@ -169,7 +159,6 @@ async def match_resume(
     )
 
     if not job:
-
         raise HTTPException(
             status_code=404,
             detail="Job Not Found",
@@ -185,7 +174,6 @@ async def match_resume(
     )
 
     with open(file_path, "wb") as buffer:
-
         shutil.copyfileobj(
             file.file,
             buffer,
@@ -194,7 +182,6 @@ async def match_resume(
     saved_resume_path = str(file_path)
 
     if extension == ".docx":
-
         saved_resume_path = convert_docx_to_pdf(
             saved_resume_path
         )
@@ -204,26 +191,19 @@ async def match_resume(
     )
 
     if not resume_text:
-
         raise HTTPException(
             status_code=400,
             detail="Unable to extract resume text.",
         )
 
-    email = extract_email(
-        resume_text
-    )
-
-    phone = extract_phone(
-        resume_text
-    )
+    email = extract_email(resume_text)
+    phone = extract_phone(resume_text)
 
     if duplicate_resume(
         db,
         email,
         phone,
     ):
-
         raise HTTPException(
             status_code=409,
             detail="This resume already exists.",
@@ -259,7 +239,6 @@ async def match_resume(
     )
 
     if not candidate_name:
-
         candidate_name = (
             file.filename
             .replace(extension, "")
@@ -267,74 +246,57 @@ async def match_resume(
         )
 
     candidate = Candidate(
-
         name=candidate_name,
-
         email=email,
-
         phone=phone,
-
         filename=Path(
             saved_resume_path
         ).name,
-
         job_title=job.title,
-
         company=job.company,
-
         experience=experience,
-
         skills=", ".join(skills),
-
         match_percentage=match_percentage,
-
         ai_summary=ai.get(
             "summary",
             "",
         ),
-
         strengths="\n".join(
             ai.get(
                 "strengths",
                 [],
             )
         ),
-
         weaknesses="\n".join(
             ai.get(
                 "weaknesses",
                 [],
             )
         ),
-
         missing_skills="\n".join(
             ai.get(
                 "missing_skills",
                 [],
             )
         ),
-
         interview_questions="\n".join(
             ai.get(
                 "interview_questions",
                 [],
             )
         ),
-
         status="Pending",
-
         notes=(
             f"ATS Score : {ats_score}\n"
-            f"Uploaded : {datetime.now().strftime('%d-%m-%Y %H:%M')}"
+            f"Uploaded : "
+            f"{datetime.now().strftime('%d-%m-%Y %H:%M')}"
         ),
-
     )
 
     db.add(candidate)
-
     db.commit()
+    db.refresh(candidate)
 
-    db.refresh(candidate)    
     return {
         "message": "Resume Analysed Successfully",
         "candidate": {
@@ -359,6 +321,10 @@ async def match_resume(
     }
 
 
+# ======================================================
+# RESUME HISTORY
+# ======================================================
+
 @router.get("/history")
 def resume_history(
     db: Session = Depends(get_db),
@@ -371,7 +337,6 @@ def resume_history(
     )
 
     return [
-
         {
             "id": c.id,
             "name": c.name,
@@ -381,11 +346,13 @@ def resume_history(
             "status": c.status,
             "uploaded": c.notes,
         }
-
         for c in candidates
-
     ]
 
+
+# ======================================================
+# RESUME DETAILS
+# ======================================================
 
 @router.get("/{candidate_id}")
 def resume_details(
@@ -400,7 +367,6 @@ def resume_details(
     )
 
     if not candidate:
-
         raise HTTPException(
             status_code=404,
             detail="Candidate Not Found",
@@ -408,6 +374,10 @@ def resume_details(
 
     return candidate
 
+
+# ======================================================
+# DELETE RESUME
+# ======================================================
 
 @router.delete("/{candidate_id}")
 def delete_resume(
@@ -422,7 +392,6 @@ def delete_resume(
     )
 
     if not candidate:
-
         raise HTTPException(
             status_code=404,
             detail="Candidate Not Found",
@@ -434,17 +403,19 @@ def delete_resume(
     )
 
     if resume.exists():
-
         resume.unlink()
 
     db.delete(candidate)
-
     db.commit()
 
     return {
         "message": "Resume Deleted Successfully"
     }
 
+
+# ======================================================
+# REANALYZE RESUME
+# ======================================================
 
 @router.post("/reanalyze/{candidate_id}")
 def reanalyze_resume(
@@ -459,7 +430,6 @@ def reanalyze_resume(
     )
 
     if not candidate:
-
         raise HTTPException(
             status_code=404,
             detail="Candidate Not Found",
@@ -471,7 +441,6 @@ def reanalyze_resume(
     )
 
     if not file_path.exists():
-
         raise HTTPException(
             status_code=404,
             detail="Resume File Missing",
@@ -483,12 +452,13 @@ def reanalyze_resume(
 
     job = (
         db.query(Job)
-        .filter(Job.title == candidate.job_title)
+        .filter(
+            Job.title == candidate.job_title
+        )
         .first()
     )
 
     if not job:
-
         raise HTTPException(
             status_code=404,
             detail="Job Not Found",
@@ -540,7 +510,6 @@ def reanalyze_resume(
     )
 
     db.commit()
-
     db.refresh(candidate)
 
     return {
