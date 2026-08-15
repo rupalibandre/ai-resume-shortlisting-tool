@@ -8,4 +8,4 @@ bcrypt
 pydantic
 pydantic[email]
 groq
-from jose import JWTError, jwt
+python-jose[cryptography]
