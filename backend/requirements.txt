@@ -13,3 +13,4 @@ passlib
 PyMuPDF
 python-docx
 docx2pdf
+openpyxl
