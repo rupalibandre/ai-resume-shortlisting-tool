@@ -9,3 +9,4 @@ pydantic
 pydantic[email]
 groq
 python-jose[cryptography]
+passlib
