@@ -10,3 +10,4 @@ pydantic[email]
 groq
 python-jose[cryptography]
 passlib
+PyMuPDF
