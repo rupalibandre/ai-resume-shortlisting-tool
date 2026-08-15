@@ -12,3 +12,4 @@ python-jose[cryptography]
 passlib
 PyMuPDF
 python-docx
+docx2pdf
