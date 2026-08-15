@@ -11,3 +11,4 @@ groq
 python-jose[cryptography]
 passlib
 PyMuPDF
+python-docx
