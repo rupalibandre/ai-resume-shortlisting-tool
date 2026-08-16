@@ -1,47 +1,52 @@
 from datetime import datetime, timedelta, timezone
+import os
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
-
-from app.core.config import (
-    SECRET_KEY,
-    ALGORITHM,
-    ACCESS_TOKEN_EXPIRE_MINUTES,
-)
-
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-)
 
 
-def hash_password(password: str):
-    return pwd_context.hash(password)
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
-def verify_password(
-    plain_password: str,
-    hashed_password: str,
-):
-    return pwd_context.verify(
-        plain_password,
-        hashed_password,
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY is not configured")
+
+
+def hash_password(password: str) -> str:
+    password_bytes = password.encode("utf-8")
+
+    # bcrypt supports max 72 bytes.
+    if len(password_bytes) > 72:
+        raise ValueError("Password must be 72 bytes or fewer.")
+
+    return bcrypt.hashpw(
+        password_bytes,
+        bcrypt.gensalt(),
+    ).decode("utf-8")
+
+
+def verify_password(password: str, hashed_password: str) -> bool:
+    password_bytes = password.encode("utf-8")
+
+    if len(password_bytes) > 72:
+        return False
+
+    return bcrypt.checkpw(
+        password_bytes,
+        hashed_password.encode("utf-8"),
     )
 
 
-def create_access_token(data: dict):
-
+def create_access_token(data: dict) -> str:
     to_encode = data.copy()
 
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
 
-    to_encode.update(
-        {
-            "exp": expire,
-        }
-    )
+    to_encode.update({"exp": expire})
 
     return jwt.encode(
         to_encode,
@@ -50,20 +55,12 @@ def create_access_token(data: dict):
     )
 
 
-def verify_access_token(token: str):
-
+def decode_access_token(token: str) -> dict:
     try:
-
-        payload = jwt.decode(
+        return jwt.decode(
             token,
             SECRET_KEY,
             algorithms=[ALGORITHM],
         )
-
-        if payload.get("sub") is None:
-            return None
-
-        return payload
-
     except JWTError:
-        return None
+        raise ValueError("Invalid or expired token")
