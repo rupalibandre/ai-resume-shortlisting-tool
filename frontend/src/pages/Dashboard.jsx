@@ -356,7 +356,7 @@ function Dashboard() {
 
                       <a
 
-                        href={`http://127.0.0.1:8000/uploads/${candidate.resume}`}
+                        href={`https://backend-jpo6.onrender.com/uploads/${candidate.resume}`}
 
                         target="_blank"
 
