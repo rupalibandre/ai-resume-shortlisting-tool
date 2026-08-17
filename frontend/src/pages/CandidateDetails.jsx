@@ -96,7 +96,7 @@ function CandidateDetails() {
     }
 
     window.open(
-      `http://127.0.0.1:8000/viewer/${encodeURIComponent(candidate.filename)}`,
+      `https://backend-jpo6.onrender.com/viewer/${encodeURIComponent(candidate.filename)}`,
       "_blank"
     );
 
@@ -113,7 +113,7 @@ function CandidateDetails() {
     }
 
     window.open(
-      `http://127.0.0.1:8000/uploads/${encodeURIComponent(candidate.filename)}`,
+      `https://backend-jpo6.onrender.com/uploads/${encodeURIComponent(candidate.filename)}`,
       "_blank"
     );
 

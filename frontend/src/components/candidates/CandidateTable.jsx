@@ -118,7 +118,7 @@ function CandidateTable({
                   </button>
 
                   <a
-                    href={`http://127.0.0.1:8000/uploads/${candidate.filename}`}
+                    href={`https://backend-jpo6.onrender.com/uploads/${candidate.filename}`}
                     target="_blank"
                     rel="noreferrer"
                     className="text-green-400 hover:text-green-500"
