@@ -19,6 +19,7 @@ from app.api.notifications import router as notifications_router
 from app.api.activity import router as activity_router
 
 
+
 # ======================================================
 # DATABASE
 # ======================================================
